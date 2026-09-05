@@ -125,31 +125,7 @@ CREATE TABLE IF NOT EXISTS technicians (
 
 
 -- ---------------------------------------------------------
--- 5. DEVICES
--- ---------------------------------------------------------
-
-CREATE TABLE IF NOT EXISTS devices (
-    id BIGSERIAL PRIMARY KEY,
-
-    customer_id UUID NOT NULL
-        REFERENCES users(id),
-
-    device_type VARCHAR(100) NOT NULL,
-
-    brand VARCHAR(100),
-
-    model VARCHAR(100),
-
-    serial_number VARCHAR(150),
-
-    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
-
-    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
-);
-
-
--- ---------------------------------------------------------
--- 6. SERVICE REQUESTS
+-- 5. SERVICE REQUESTS
 -- ---------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS service_requests (
@@ -158,14 +134,13 @@ CREATE TABLE IF NOT EXISTS service_requests (
     customer_id UUID NOT NULL
         REFERENCES users(id),
 
-    device_id BIGINT NOT NULL
-        REFERENCES devices(id),
-
     technician_id UUID
         REFERENCES users(id),
 
     created_by UUID NOT NULL
         REFERENCES users(id),
+
+    device_info TEXT NOT NULL,
 
     problem_description TEXT NOT NULL,
 
@@ -190,7 +165,7 @@ CREATE TABLE IF NOT EXISTS service_requests (
 
 
 -- ---------------------------------------------------------
--- 7. SERVICE REQUEST HISTORY
+-- 6. SERVICE REQUEST HISTORY
 -- ---------------------------------------------------------
 
 CREATE TABLE IF NOT EXISTS service_request_history (
@@ -226,7 +201,7 @@ CREATE TABLE IF NOT EXISTS service_request_history (
 
 
 -- ---------------------------------------------------------
--- 8. INDEXES
+-- 7. INDEXES
 -- ---------------------------------------------------------
 
 -- Users
@@ -236,6 +211,7 @@ ON users(role);
 
 
 -- Technicians
+
 CREATE INDEX IF NOT EXISTS idx_technicians_available
 ON technicians(is_available);
 
@@ -243,19 +219,10 @@ CREATE INDEX IF NOT EXISTS idx_technicians_active_jobs
 ON technicians(active_jobs);
 
 
--- Devices
-
-CREATE INDEX IF NOT EXISTS idx_devices_customer_id
-ON devices(customer_id);
-
-
 -- Service Requests
 
 CREATE INDEX IF NOT EXISTS idx_service_requests_customer_id
 ON service_requests(customer_id);
-
-CREATE INDEX IF NOT EXISTS idx_service_requests_device_id
-ON service_requests(device_id);
 
 CREATE INDEX IF NOT EXISTS idx_service_requests_technician_id
 ON service_requests(technician_id);
@@ -286,7 +253,7 @@ ON service_request_history(created_at);
 
 
 -- ---------------------------------------------------------
--- 9. UPDATED_AT FUNCTION
+-- 8. UPDATED_AT FUNCTION
 -- ---------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION update_updated_at()
@@ -302,7 +269,7 @@ $$;
 
 
 -- ---------------------------------------------------------
--- 10. UPDATED_AT TRIGGERS
+-- 9. UPDATED_AT TRIGGERS
 -- ---------------------------------------------------------
 
 DROP TRIGGER IF EXISTS users_updated_at
@@ -323,15 +290,6 @@ FOR EACH ROW
 EXECUTE FUNCTION update_updated_at();
 
 
-DROP TRIGGER IF EXISTS devices_updated_at
-ON devices;
-
-CREATE TRIGGER devices_updated_at
-BEFORE UPDATE ON devices
-FOR EACH ROW
-EXECUTE FUNCTION update_updated_at();
-
-
 DROP TRIGGER IF EXISTS service_requests_updated_at
 ON service_requests;
 
@@ -342,7 +300,7 @@ EXECUTE FUNCTION update_updated_at();
 
 
 -- ---------------------------------------------------------
--- 11. BASIC ROLE VALIDATION
+-- 10. BASIC ROLE VALIDATION
 -- ---------------------------------------------------------
 
 -- A technician record must belong to a TECHNICIAN user.
@@ -387,52 +345,7 @@ EXECUTE FUNCTION validate_technician_user();
 
 
 -- ---------------------------------------------------------
--- 12. DEVICE CUSTOMER VALIDATION
--- ---------------------------------------------------------
-
--- A device must belong to a CUSTOMER user.
-
-CREATE OR REPLACE FUNCTION validate_device_customer()
-RETURNS TRIGGER
-LANGUAGE plpgsql
-AS $$
-DECLARE
-    user_role_value user_role;
-BEGIN
-
-    SELECT role
-    INTO user_role_value
-    FROM users
-    WHERE id = NEW.customer_id;
-
-
-    IF user_role_value IS NULL THEN
-        RAISE EXCEPTION 'Customer user does not exist';
-    END IF;
-
-
-    IF user_role_value <> 'CUSTOMER' THEN
-        RAISE EXCEPTION
-            'Only users with CUSTOMER role can own devices';
-    END IF;
-
-
-    RETURN NEW;
-END;
-$$;
-
-
-DROP TRIGGER IF EXISTS device_customer_validation
-ON devices;
-
-CREATE TRIGGER device_customer_validation
-BEFORE INSERT OR UPDATE ON devices
-FOR EACH ROW
-EXECUTE FUNCTION validate_device_customer();
-
-
--- ---------------------------------------------------------
--- 13. SERVICE REQUEST USER VALIDATION
+-- 11. SERVICE REQUEST USER VALIDATION
 -- ---------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION validate_service_request_users()
@@ -501,7 +414,7 @@ EXECUTE FUNCTION validate_service_request_users();
 
 
 -- ---------------------------------------------------------
--- 14. SERVICE REQUEST INITIAL HISTORY
+-- 12. SERVICE REQUEST INITIAL HISTORY
 -- ---------------------------------------------------------
 
 CREATE OR REPLACE FUNCTION create_initial_request_history()
