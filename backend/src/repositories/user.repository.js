@@ -85,3 +85,15 @@ export async function createTechnicianProfile({ userId, specialization, maxCapac
   if (error) throw error;
   return data;
 }
+
+export async function findUserByPhone(phone) {
+  const { data, error } = await supabase
+    .from("users")
+    .select(publicUserFields)
+    .eq("phone", phone)
+    .eq("role", "CUSTOMER")
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}

@@ -1,6 +1,10 @@
 import { supabase } from "../config/database.js";
 
-const fields = "*";
+const fields = `
+  *,
+  customer:users!service_requests_customer_id_fkey(id, name, email, phone),
+  technician:users!service_requests_technician_id_fkey(id, name, email, phone)
+`;
 
 export async function createServiceRequest(request) {
   const { data, error } = await supabase
@@ -29,6 +33,18 @@ export async function findServiceRequestById(id) {
     .from("service_requests")
     .select(fields)
     .eq("id", id)
+    .maybeSingle();
+
+  if (error) throw error;
+  return data;
+}
+
+export async function findTrackableServiceRequest(id, accessCode) {
+  const { data, error } = await supabase
+    .from("service_requests")
+    .select(fields)
+    .eq("id", id)
+    .eq("customer_access_code", accessCode)
     .maybeSingle();
 
   if (error) throw error;

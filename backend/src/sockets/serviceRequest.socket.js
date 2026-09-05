@@ -1,3 +1,5 @@
+const reservations = new Map();
+
 export function registerServiceRequestSocket(io) {
   io.on("connection", (socket) => {
     // Replace client-supplied room joins with authenticated identity later.
@@ -8,6 +10,37 @@ export function registerServiceRequestSocket(io) {
     socket.on("joinServiceRequest", (serviceRequestId) => {
       if (serviceRequestId !== undefined && serviceRequestId !== null) {
         socket.join(`serviceRequest:${serviceRequestId}`);
+      }
+    });
+
+    socket.on("technician:reservation", ({ technicianId, requestId, reserved }) => {
+      if (!technicianId || !requestId) return;
+
+      const key = `${socket.id}:${requestId}`;
+      if (reserved) {
+        reservations.set(key, { technicianId, requestId, socketId: socket.id });
+      } else {
+        reservations.delete(key);
+      }
+
+      io.to("operators").emit("technician:reservationChanged", {
+        technicianId,
+        requestId,
+        reserved: Boolean(reserved),
+        reservationId: key,
+      });
+    });
+
+    socket.on("disconnect", () => {
+      for (const [key, reservation] of reservations) {
+        if (reservation.socketId !== socket.id) continue;
+        reservations.delete(key);
+        io.to("operators").emit("technician:reservationChanged", {
+          technicianId: reservation.technicianId,
+          requestId: reservation.requestId,
+          reserved: false,
+          reservationId: key,
+        });
       }
     });
   });

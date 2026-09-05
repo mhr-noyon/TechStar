@@ -7,6 +7,7 @@ import {
   getHistory,
   getOne,
   list,
+  track,
   update,
   updateProgress,
   updateStatus,
@@ -17,6 +18,7 @@ const router = Router();
 // Have to connect authentication and role authorization here later.
 router.post("/", create);
 router.get("/", list);
+router.get("/track", track);
 router.get("/:id/history", getHistory);
 router.patch("/:id/assign", assign);
 router.patch("/:id/status", updateStatus);

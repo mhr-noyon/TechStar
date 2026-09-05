@@ -2,6 +2,8 @@ import bcrypt from "bcryptjs";
 import {
   createStaffUser,
   createTechnicianProfile,
+  createUser as createCustomerRecord,
+  findUserByPhone,
   updateUser,
 } from "../repositories/user.repository.js";
 
@@ -58,4 +60,19 @@ export async function updateUserDetails(id, data) {
 
   if (Object.keys(changes).length === 0) throw userError("No user fields supplied");
   return updateUser(id, changes);
+}
+
+export async function findCustomerByPhone(phone) {
+  if (!phone) throw userError("phone is required");
+  return findUserByPhone(phone);
+}
+
+export async function createCustomer(data) {
+  const { name, email, phone } = data;
+  if (!name || !email || !phone) {
+    throw userError("name, email and phone are required");
+  }
+
+  const passwordHash = await bcrypt.hash(`${phone}-${Date.now()}`, 12);
+  return createCustomerRecord({ name, email, phone, passwordHash });
 }

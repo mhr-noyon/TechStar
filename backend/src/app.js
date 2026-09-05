@@ -1,6 +1,7 @@
 import express from "express";
 import cors from "cors";
 import { supabase } from "./config/database.js";
+import { env } from "./config/env.js";
 import serviceRequestRoutes from "./routes/serviceRequest.routes.js";
 import technicianRoutes from "./routes/technician.routes.js";
 import userRoutes from "./routes/user.routes.js";
@@ -8,7 +9,23 @@ import { errorHandler } from "./middleware/error.middleware.js";
 
 const app = express();
 
-app.use(cors());
+app.use(
+  cors({
+    origin: (origin, callback) => {
+      // Allow requests without an Origin header
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (env.allowedOrigins.includes(origin)) {
+        return callback(null, true);
+      }
+
+      return callback(new Error("Not allowed by CORS"));
+    },
+    credentials: true,
+  }));
+  
 app.use(express.json());
 
 app.use("/api/service-requests", serviceRequestRoutes);

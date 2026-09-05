@@ -1,7 +1,10 @@
 import { supabase } from "../config/database.js";
 
 export async function findTechnicians() {
-  const { data, error } = await supabase.from("technicians").select("*").order("id");
+  const { data, error } = await supabase
+    .from("technicians")
+    .select("*, user:users(id, name, email, phone)")
+    .order("id");
   if (error) throw error;
   return data;
 }
@@ -9,7 +12,7 @@ export async function findTechnicians() {
 export async function findAvailableTechnicians() {
   const { data, error } = await supabase
     .from("technicians")
-    .select("*")
+    .select("*, user:users(id, name, email, phone)")
     .eq("is_available", true)
     .order("id");
   if (error) throw error;
@@ -19,7 +22,7 @@ export async function findAvailableTechnicians() {
 export async function findTechnicianById(id) {
   const { data, error } = await supabase
     .from("technicians")
-    .select("*")
+    .select("*, user:users(id, name, email, phone)")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;

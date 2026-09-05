@@ -131,6 +131,8 @@ CREATE TABLE IF NOT EXISTS technicians (
 CREATE TABLE IF NOT EXISTS service_requests (
     id BIGSERIAL PRIMARY KEY,
 
+    customer_access_code CHAR(6) NOT NULL,
+
     customer_id UUID NOT NULL
         REFERENCES users(id),
 

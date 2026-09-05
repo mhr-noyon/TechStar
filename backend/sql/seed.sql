@@ -159,6 +159,7 @@ VALUES
 
 INSERT INTO service_requests (
     customer_id,
+    customer_access_code,
     technician_id,
     created_by,
     device_info,
@@ -174,6 +175,7 @@ VALUES
 -- Request 1: Repairing
 (
     '11111111-1111-1111-1111-111111111111',
+    '610241',
     'dddddddd-dddd-dddd-dddd-dddddddddddd',
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
 
@@ -198,6 +200,7 @@ Storage: 512GB SSD',
 -- Request 2: Waiting for parts
 (
     '22222222-2222-2222-2222-222222222222',
+    '742905',
     'ffffffff-ffff-ffff-ffff-ffffffffffff',
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
 
@@ -222,6 +225,7 @@ Storage: 256GB SSD',
 -- Request 3: Ready for delivery
 (
     '33333333-3333-3333-3333-333333333333',
+    '183604',
     'dddddddd-dddd-dddd-dddd-dddddddddddd',
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
 
@@ -246,6 +250,7 @@ Storage: 1TB HDD',
 -- Request 4: Received
 (
     '44444444-4444-4444-4444-444444444444',
+    '529817',
     NULL,
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
 
@@ -270,6 +275,7 @@ Storage: 512GB SSD',
 -- Request 5: Assigned
 (
     '11111111-1111-1111-1111-111111111111',
+    '304672',
     'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
 
@@ -292,6 +298,7 @@ Serial Number: HP-RAHIM-005',
 -- Request 6: Completed
 (
     '22222222-2222-2222-2222-222222222222',
+    '891356',
     'ffffffff-ffff-ffff-ffff-ffffffffffff',
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
 
@@ -316,6 +323,7 @@ Storage: 512GB SSD',
 -- Request 7: Failed
 (
     '33333333-3333-3333-3333-333333333333',
+    '467128',
     'eeeeeeee-eeee-eeee-eeee-eeeeeeeeeeee',
     'bbbbbbbb-bbbb-bbbb-bbbb-bbbbbbbbbbbb',
 
@@ -338,6 +346,7 @@ Serial Number: TP-TANVIR-007',
 -- Request 8: Cancelled
 (
     '44444444-4444-4444-4444-444444444444',
+    '275903',
     NULL,
     'aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa',
 

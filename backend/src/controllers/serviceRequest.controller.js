@@ -9,6 +9,7 @@ import {
   updateProgressRequest,
   updateRequest,
   updateStatusRequest,
+  trackRequest,
 } from "../services/serviceRequest.service.js";
 
 export async function create(req, res, next) {
@@ -95,6 +96,15 @@ export async function cancel(req, res, next) {
 export async function getHistory(req, res, next) {
   try {
     const data = await getRequestHistory(req.params.id);
+    return res.json({ success: true, data });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function track(req, res, next) {
+  try {
+    const data = await trackRequest(req.query.requestId, req.query.accessCode);
     return res.json({ success: true, data });
   } catch (error) {
     return next(error);

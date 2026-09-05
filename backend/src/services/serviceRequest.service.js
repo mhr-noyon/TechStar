@@ -2,6 +2,7 @@ import {
   createServiceRequest,
   findServiceRequestById,
   findServiceRequests,
+  findTrackableServiceRequest,
   updateServiceRequest,
 } from "../repositories/serviceRequest.repository.js";
 import {
@@ -29,6 +30,10 @@ const statuses = [
   "CANCELLED",
 ];
 const priorities = ["NORMAL", "HIGH", "URGENT"];
+
+function createAccessCode() {
+  return String(Math.floor(100000 + Math.random() * 900000));
+}
 
 function serviceError(message, statusCode = 400) {
   const error = new Error(message);
@@ -61,6 +66,7 @@ export async function createRequest({ customerId, createdBy, deviceInfo, problem
 
   const request = await createServiceRequest({
     customer_id: customerId,
+    customer_access_code: createAccessCode(),
     created_by: createdBy,
     device_info: deviceInfo,
     problem_description: problemDescription,
@@ -77,6 +83,16 @@ export async function createRequest({ customerId, createdBy, deviceInfo, problem
   });
   emitServiceRequestCreated(request);
   return request;
+}
+
+export async function trackRequest(id, accessCode) {
+  if (!id || !/^\d{6}$/.test(accessCode || "")) {
+    throw serviceError("A request ID and six-digit access code are required");
+  }
+
+  const request = await findTrackableServiceRequest(id, accessCode);
+  if (!request) throw serviceError("Request ID or access code is not valid", 404);
+  return { request, history: await findHistoryByRequestId(id) };
 }
 
 export function listRequests() {
