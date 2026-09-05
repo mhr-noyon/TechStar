@@ -1,0 +1,72 @@
+@import "tailwindcss";
+
+@theme {
+  --color-tech-ink: #17212b;
+  --color-tech-muted: #657581;
+  --color-tech-blue: #1769aa;
+  --color-tech-blue-soft: #eaf4fb;
+  --color-tech-line: #dfe7ec;
+  --color-tech-surface: #ffffff;
+  --font-sans: Inter, ui-sans-serif, system-ui, sans-serif;
+  --font-display: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+}
+
+:root {
+  font-family: Inter, ui-sans-serif, system-ui, sans-serif;
+  color: #17212b;
+  background: #f5f7fa;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+  min-width: 320px;
+  font-size: 16px;
+}
+
+#root {
+  min-height: 100vh;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+body {
+  font-size: 18px;
+}
+
+h1,
+h2,
+h3 {
+  font-family: "Manrope", "Inter", ui-sans-serif, system-ui, sans-serif;
+  letter-spacing: -0.025em;
+}
+button,
+input,
+select,
+textarea {
+  font: inherit;
+}
+
+.app-shell {
+  font-size: 16px;
+}
+.app-shell .subtitle,
+.app-shell .panel-heading p,
+.app-shell .section-heading p,
+.app-shell td,
+.app-shell th,
+.app-shell .button,
+.app-shell input,
+.app-shell select,
+.app-shell textarea {
+  font-size: 15px;
+}
