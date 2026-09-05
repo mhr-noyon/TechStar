@@ -12,6 +12,11 @@ import {
   createHistory,
   findHistoryByRequestId,
 } from "../repositories/history.repository.js";
+import {
+  emitServiceRequestAssigned,
+  emitServiceRequestCreated,
+  emitServiceRequestStatusUpdated,
+} from "../sockets/serviceRequest.socket.js";
 
 const statuses = [
   "RECEIVED",
@@ -70,6 +75,7 @@ export async function createRequest({ customerId, createdBy, deviceInfo, problem
     new_progress: request.progress,
     note: "Service request created",
   });
+  emitServiceRequestCreated(request);
   return request;
 }
 
@@ -104,6 +110,7 @@ export async function assignRequest(id, { technicianId, changedBy }) {
   });
   await changeActiveJobs(technicianId, 1);
   await saveHistory(request, updated, changedBy, `Assigned to technician ${technicianId}`);
+  emitServiceRequestAssigned(updated, technicianId, changedBy);
   return updated;
 }
 
@@ -120,6 +127,9 @@ export async function updateRequest(id, changes) {
 
   const updated = await updateServiceRequest(id, update);
   await saveHistory(request, updated, changedBy, changes.note || "Request details updated");
+  if (updated.status !== request.status) {
+    emitServiceRequestStatusUpdated(updated, changedBy);
+  }
   return updated;
 }
 
@@ -145,6 +155,7 @@ export async function completeRequest(id, { changedBy, note }) {
   });
   await saveHistory(request, updated, changedBy, note || "Repair completed");
   if (request.technician_id) await changeActiveJobs(request.technician_id, -1);
+  emitServiceRequestStatusUpdated(updated, changedBy);
   return updated;
 }
 
@@ -157,5 +168,8 @@ async function updateWithHistory(id, changes, changedBy, note) {
   const request = await getRequest(id);
   const updated = await updateServiceRequest(id, changes);
   await saveHistory(request, updated, changedBy, note);
+  if (changes.status !== undefined) {
+    emitServiceRequestStatusUpdated(updated, changedBy);
+  }
   return updated;
 }
