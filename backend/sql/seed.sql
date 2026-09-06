@@ -164,6 +164,7 @@ INSERT INTO service_requests (
     created_by,
     device_info,
     problem_description,
+    payment_amount,
     priority,
     status,
     progress,
@@ -171,6 +172,7 @@ INSERT INTO service_requests (
     completed_at
 )
 VALUES
+
 
 -- Request 1: Repairing
 (
@@ -188,6 +190,7 @@ Storage: 512GB SSD',
 
     'Laptop is overheating and shutting down randomly.',
 
+    3500.00,
     'HIGH',
     'REPAIRING',
     65,
@@ -213,6 +216,7 @@ Storage: 256GB SSD',
 
     'Laptop keyboard is not working properly. Several keys are unresponsive.',
 
+    1800.00,
     'NORMAL',
     'WAITING_FOR_PARTS',
     45,
@@ -238,6 +242,7 @@ Storage: 1TB HDD',
 
     'Desktop does not turn on. Power supply unit appears to be faulty.',
 
+    4500.00,
     'URGENT',
     'READY_FOR_DELIVERY',
     100,
@@ -263,6 +268,7 @@ Storage: 512GB SSD',
 
     'Laptop screen is flickering and sometimes becomes completely black.',
 
+    2200.00,
     'NORMAL',
     'RECEIVED',
     0,
@@ -286,6 +292,7 @@ Serial Number: HP-RAHIM-005',
 
     'Printer is producing faded prints and paper jams frequently.',
 
+    1200.00,
     'HIGH',
     'ASSIGNED',
     10,
@@ -311,6 +318,7 @@ Storage: 512GB SSD',
 
     'Laptop was running very slowly and frequently freezing.',
 
+    2800.00,
     'NORMAL',
     'COMPLETED',
     100,
@@ -334,6 +342,7 @@ Serial Number: TP-TANVIR-007',
 
     'Router repeatedly disconnects from the internet.',
 
+    1500.00,
     'HIGH',
     'FAILED',
     30,
@@ -357,6 +366,7 @@ Serial Number: HP-SADIA-008',
 
     'Customer requested repair but later cancelled the service.',
 
+    0.00,
     'NORMAL',
     'CANCELLED',
     0,
@@ -364,6 +374,7 @@ Serial Number: HP-SADIA-008',
     NULL,
     NULL
 );
+
 
 
 -- ---------------------------------------------------------

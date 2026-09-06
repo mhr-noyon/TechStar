@@ -146,6 +146,9 @@ CREATE TABLE IF NOT EXISTS service_requests (
 
     problem_description TEXT NOT NULL,
 
+    payment_amount NUMERIC(12, 2)
+        CHECK (payment_amount IS NULL OR payment_amount >= 0),
+
     priority request_priority NOT NULL
         DEFAULT 'NORMAL',
 
@@ -457,3 +460,41 @@ CREATE TRIGGER service_request_initial_history
 AFTER INSERT ON service_requests
 FOR EACH ROW
 EXECUTE FUNCTION create_initial_request_history();
+
+
+CREATE OR REPLACE FUNCTION create_request_update_history()
+RETURNS TRIGGER
+LANGUAGE plpgsql
+AS $$
+BEGIN
+    INSERT INTO service_request_history (
+        service_request_id,
+        changed_by,
+        old_status,
+        new_status,
+        old_progress,
+        new_progress,
+        note
+    )
+    VALUES (
+        NEW.id,
+        COALESCE(NEW.created_by, NULL),
+        OLD.status,
+        NEW.status,
+        OLD.progress,
+        NEW.progress,
+        'Service request updated'
+    );
+
+    RETURN NEW;
+END;
+$$;
+
+
+DROP TRIGGER IF EXISTS service_request_update_history
+ON service_requests;
+
+CREATE TRIGGER service_request_update_history
+AFTER UPDATE ON service_requests
+FOR EACH ROW
+EXECUTE FUNCTION create_request_update_history();

@@ -17,11 +17,42 @@ export async function createServiceRequest(request) {
   return data;
 }
 
-export async function findServiceRequests() {
-  let query = supabase
-    .from("service_requests")
-    .select(fields)
-    .order("created_at", { ascending: false });
+export async function findServiceRequests(options = {}) {
+  const {
+    sortBy = "created_at",
+    sortOrder = "desc",
+    status,
+    priority,
+    search,
+    page,
+    limit,
+  } = options;
+
+  let query = supabase.from("service_requests").select(fields);
+
+  if (status && status !== "ALL") {
+    query = query.eq("status", status);
+  }
+
+  if (priority && priority !== "ALL") {
+    query = query.eq("priority", priority);
+  }
+
+  if (search) {
+    query = query.or(`device_brand.ilike.%${search}%,device_model.ilike.%${search}%,problem_description.ilike.%${search}%,customer_access_code.ilike.%${search}%`);
+  }
+
+  const isAscending = sortOrder.toLowerCase() === "asc";
+  const validSortColumns = ["created_at", "updated_at", "priority", "progress", "expected_delivery_date", "status", "payment_amount"];
+  const sortCol = validSortColumns.includes(sortBy) ? sortBy : "created_at";
+
+  query = query.order(sortCol, { ascending: isAscending });
+
+  if (page && limit) {
+    const from = (page - 1) * limit;
+    const to = from + limit - 1;
+    query = query.range(from, to);
+  }
 
   const { data, error } = await query;
   if (error) throw error;

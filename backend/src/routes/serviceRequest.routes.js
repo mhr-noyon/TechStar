@@ -13,12 +13,14 @@ import {
   updateStatus,
 } from "../controllers/serviceRequest.controller.js";
 
+import { sensitiveRateLimiter } from "../middleware/rateLimit.middleware.js";
+
 const router = Router();
 
 // Have to connect authentication and role authorization here later.
 router.post("/", create);
 router.get("/", list);
-router.get("/track", track);
+router.get("/track", sensitiveRateLimiter, track);
 router.get("/:id/history", getHistory);
 router.patch("/:id/assign", assign);
 router.patch("/:id/status", updateStatus);
