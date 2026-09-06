@@ -15,14 +15,18 @@ export default function ServiceRequests() {
   const [query, setQuery] = useState("");
   const [status, setStatus] = useState("ALL");
   const [priority, setPriority] = useState("ALL");
+  const [sortBy, setSortBy] = useState("created_at");
+  const [sortOrder, setSortOrder] = useState("desc");
+
   const load = () => {
     setLoading(true);
     serviceRequestApi
-      .list()
+      .list({ sortBy, sortOrder, status, priority, search: query })
       .then(setRequests)
       .catch((e) => setError(e.message))
       .finally(() => setLoading(false));
   };
+
   useEffect(() => {
     const timer = setTimeout(load, 0);
     const cleanup = connectOperatorSocket({
@@ -45,19 +49,35 @@ export default function ServiceRequests() {
       clearTimeout(timer);
       cleanup();
     };
-  }, []);
+  }, [sortBy, sortOrder, status, priority]);
+
   const filtered = useMemo(
     () =>
-      requests.filter((item) => {
-        const haystack =
-          `${item.id} ${item.customer_id} ${item.device_info} ${item.technician_id || ""}`.toLowerCase();
-        return (
-          haystack.includes(query.toLowerCase()) &&
-          (status === "ALL" || item.status === status) &&
-          (priority === "ALL" || item.priority === priority)
-        );
-      }),
-    [requests, query, status, priority],
+      requests
+        .filter((item) => {
+          const haystack =
+            `${item.id} ${item.customer?.name || ""} ${item.device_info} ${item.technician?.name || ""}`.toLowerCase();
+          return (
+            haystack.includes(query.toLowerCase()) &&
+            (status === "ALL" || item.status === status) &&
+            (priority === "ALL" || item.priority === priority)
+          );
+        })
+        .sort((a, b) => {
+          let valA = a[sortBy];
+          let valB = b[sortBy];
+          if (sortBy === "customer") {
+            valA = a.customer?.name || "";
+            valB = b.customer?.name || "";
+          } else if (sortBy === "created_at" || sortBy === "updated_at") {
+            valA = valA ? new Date(valA).getTime() : 0;
+            valB = valB ? new Date(valB).getTime() : 0;
+          }
+          if (valA < valB) return sortOrder === "asc" ? -1 : 1;
+          if (valA > valB) return sortOrder === "asc" ? 1 : -1;
+          return 0;
+        }),
+    [requests, query, status, priority, sortBy, sortOrder],
   );
   return (
     <>
@@ -121,6 +141,26 @@ export default function ServiceRequests() {
             <option>NORMAL</option>
             <option>HIGH</option>
             <option>URGENT</option>
+          </SelectField>
+          <SelectField
+            className="select-filter"
+            aria-label="Sort by"
+            value={sortBy}
+            onChange={(e) => setSortBy(e.target.value)}
+          >
+            <option value="created_at">Sort: Created Date</option>
+            <option value="updated_at">Sort: Updated Date</option>
+            <option value="priority">Sort: Priority</option>
+            <option value="progress">Sort: Progress</option>
+          </SelectField>
+          <SelectField
+            className="select-filter"
+            aria-label="Sort direction"
+            value={sortOrder}
+            onChange={(e) => setSortOrder(e.target.value)}
+          >
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
           </SelectField>
           <span className="result-count">{filtered.length} requests</span>
         </div>

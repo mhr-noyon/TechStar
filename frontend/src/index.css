@@ -38,6 +38,11 @@ select,
 textarea {
   font: inherit;
 }
+button,
+[role="button"] {
+  cursor: pointer;
+}
+
 
 body {
   font-size: 18px;
