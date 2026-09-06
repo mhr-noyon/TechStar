@@ -19,6 +19,7 @@ import {
   emitServiceRequestStatusUpdated,
 } from "../sockets/serviceRequest.socket.js";
 import { createAndDistributeNotification } from "./notification.service.js";
+import { enqueueJob } from "../workers/index.js";
 
 const statuses = [
   "RECEIVED",
@@ -117,6 +118,16 @@ export async function createRequest({
     });
   } catch (err) {
     console.warn("Could not send new request notification:", err.message);
+  }
+
+  // Queue Graphile Worker confirmation email job immediately after DB success
+  try {
+    await enqueueJob("send-service-request-email", {
+      requestId: request.id,
+      attempt: 1,
+    });
+  } catch (err) {
+    console.warn("Could not enqueue service request email job:", err.message);
   }
 
   return request;

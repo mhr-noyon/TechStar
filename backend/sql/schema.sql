@@ -204,6 +204,12 @@ CREATE TABLE IF NOT EXISTS service_request_history (
     created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+-- Service Request Email Tracking
+CREATE TABLE IF NOT EXISTS service_request_emails (
+    service_id BIGINT PRIMARY KEY REFERENCES service_requests(id) ON DELETE CASCADE,
+    email_sent_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
 
 -- ---------------------------------------------------------
 -- 7. INDEXES
