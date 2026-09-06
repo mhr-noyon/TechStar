@@ -1,7 +1,10 @@
 import { apiRequest } from "./api";
 
 export const serviceRequestApi = {
-  list: () => apiRequest("/service-requests"),
+  list: (params) => {
+    const queryStr = params ? "?" + new URLSearchParams(params).toString() : "";
+    return apiRequest(`/service-requests${queryStr}`);
+  },
   track: (requestId, accessCode) =>
     apiRequest(
       `/service-requests/track?requestId=${encodeURIComponent(requestId)}&accessCode=${encodeURIComponent(accessCode)}`,
@@ -25,6 +28,11 @@ export const serviceRequestApi = {
     }),
   progress: (id, payload) =>
     apiRequest(`/service-requests/${id}/progress`, {
+      method: "PATCH",
+      body: JSON.stringify(payload),
+    }),
+  update: (id, payload) =>
+    apiRequest(`/service-requests/${id}`, {
       method: "PATCH",
       body: JSON.stringify(payload),
     }),

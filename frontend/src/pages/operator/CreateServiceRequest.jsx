@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { ArrowLeft, CalendarDays, Check, Save } from "lucide-react";
 import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../../context/AuthContext";
 import { serviceRequestApi } from "../../services/serviceRequest.api";
 import { technicianApi } from "../../services/technician.api";
 import { userApi } from "../../services/user.api";
@@ -11,7 +12,6 @@ import {
 import Loading from "../../components/common/Loading";
 import SelectField from "../../components/common/SelectField";
 
-const operatorId = import.meta.env.VITE_OPERATOR_ID || "";
 const formatDate = (value) =>
   value
     ? new Intl.DateTimeFormat("en", { dateStyle: "medium" }).format(value)
@@ -24,17 +24,21 @@ export default function CreateServiceRequest() {
     phone: "",
     email: "",
     priority: "NORMAL",
+    paymentAmount: "",
     deviceInfo: "",
     problemDescription: "",
     expectedDays: "15",
     technicianId: "",
   });
+  const { user } = useAuth();
+  const operatorId = user?.id || null;
   const [technicians, setTechnicians] = useState([]);
   const [reservations, setReservations] = useState({});
   const [customer, setCustomer] = useState(null);
   const [lookupState, setLookupState] = useState("idle");
   const [error, setError] = useState("");
   const [saving, setSaving] = useState(false);
+  const [confirmModal, setConfirmModal] = useState({ isOpen: false, pendingData: null });
 
   useEffect(() => {
     technicianApi
@@ -124,8 +128,10 @@ export default function CreateServiceRequest() {
         deviceInfo: form.deviceInfo,
         problemDescription: form.problemDescription,
         priority: form.priority,
+        paymentAmount: form.paymentAmount ? Number(form.paymentAmount) : null,
         expectedDeliveryAt: deliveryDate?.toISOString() || null,
       });
+
       if (form.technicianId) {
         await serviceRequestApi.assign(created.id, {
           technicianId: form.technicianId,
@@ -254,6 +260,8 @@ export default function CreateServiceRequest() {
                 onChange={update}
               />
             </label>
+
+
             <label className="delivery-preview">
               <CalendarDays size={16} />
               <span>

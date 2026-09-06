@@ -1,108 +1,94 @@
-import { Bell, Search, X } from "lucide-react";
-import { useEffect, useState } from "react";
-import { connectOperatorSocket } from "../../sockets/serviceRequest.socket";
+import { Menu, Search, LogOut } from "lucide-react";
+import { useState } from "react";
+import { useAuth } from "../../context/AuthContext";
+import { useNavigate } from "react-router-dom";
+import NotificationDropdown from "../common/NotificationDropdown";
 
-export default function Navbar() {
-  const [open, setOpen] = useState(false);
-  const [notifications, setNotifications] = useState([]);
-  useEffect(
-    () =>
-      connectOperatorSocket({
-        "serviceRequest:created": ({ serviceRequest }) =>
-          setNotifications((current) =>
-            [
-              {
-                id: `created-${serviceRequest.id}`,
-                text: `New request SR-${serviceRequest.id} was created`,
-                time: new Date(),
-              },
-              ...current,
-            ].slice(0, 5),
-          ),
-        "serviceRequest:assigned": ({ serviceRequest }) =>
-          setNotifications((current) =>
-            [
-              {
-                id: `assigned-${serviceRequest.id}`,
-                text: `Technician assigned to SR-${serviceRequest.id}`,
-                time: new Date(),
-              },
-              ...current,
-            ].slice(0, 5),
-          ),
-        "serviceRequest:statusUpdated": ({ serviceRequest }) =>
-          setNotifications((current) =>
-            [
-              {
-                id: `status-${serviceRequest.id}-${serviceRequest.updated_at}`,
-                text: `SR-${serviceRequest.id} status changed to ${serviceRequest.status}`,
-                time: new Date(),
-              },
-              ...current,
-            ].slice(0, 5),
-          ),
-      }),
-    [],
-  );
+export default function Navbar({ onOpenSidebar }) {
+  const [userMenuOpen, setUserMenuOpen] = useState(false);
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = async () => {
+    await logout();
+    navigate("/login");
+  };
+
+  const getInitials = (name) => {
+    if (!name) return "TS";
+    return name
+      .split(" ")
+      .map((n) => n[0])
+      .join("")
+      .substring(0, 2)
+      .toUpperCase();
+  };
+
   return (
-    <header className="flex h-[72px] items-center justify-between border-b border-tech-line bg-white px-9 max-sm:px-4">
-      <div className="hidden text-[17px] font-extrabold max-sm:block">
-        Tech<span className="text-amber-600">Star</span>
+    <header className="flex h-[72px] items-center justify-between border-b border-tech-line bg-white px-8 max-sm:px-4 sticky top-0 z-30">
+      <div className="flex items-center gap-3">
+        {onOpenSidebar && (
+          <button
+            className="md:hidden grid size-9 place-items-center rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer"
+            type="button"
+            onClick={onOpenSidebar}
+            aria-label="Open menu"
+          >
+            <Menu size={22} />
+          </button>
+        )}
+        <div className="text-[17px] font-extrabold md:hidden">
+          Tech<span className="text-amber-600">Star</span>
+        </div>
       </div>
-      <label className="flex h-[38px] w-80 items-center gap-2 rounded-lg border border-tech-line bg-slate-50 px-3 text-slate-400 max-sm:hidden">
+
+      <label className="flex h-[38px] w-80 items-center gap-2 rounded-lg border border-tech-line bg-slate-50 px-3 text-slate-400 max-md:hidden">
         <Search size={17} />
         <input
           className="w-full border-0 bg-transparent text-xs outline-none"
           placeholder="Search service requests..."
         />
       </label>
-      <div className="flex items-center gap-5">
+
+      <div className="flex items-center gap-4">
+        {/* Real-time Notification Dropdown */}
+        <NotificationDropdown />
+
+        {/* Dynamic Logged-In User Profile */}
         <div className="relative">
           <button
-            className="relative border-0 bg-transparent text-slate-500"
-            aria-label="Notifications"
-            onClick={() => setOpen((current) => !current)}
+            onClick={() => setUserMenuOpen((prev) => !prev)}
+            className="flex items-center gap-2.5 rounded-xl border border-slate-200 bg-slate-50 p-1.5 pr-3 hover:bg-slate-100 transition cursor-pointer"
           >
-            <Bell size={19} />
-            {notifications.length > 0 && (
-              <i className="absolute right-0 top-0 size-1.5 rounded-full bg-amber-500" />
-            )}
-          </button>
-          {open && (
-            <div className="absolute right-[-8px] top-9 z-10 w-[290px] rounded-xl border border-tech-line bg-white p-3.5 shadow-xl shadow-slate-900/10">
-              <div className="flex items-center justify-between border-b border-tech-line pb-2.5 text-xs">
-                <strong>Notifications</strong>
-                <button
-                  className="border-0 bg-transparent text-slate-400"
-                  onClick={() => setOpen(false)}
-                  aria-label="Close notifications"
-                >
-                  <X size={14} />
-                </button>
+            <span className="grid size-8 place-items-center rounded-lg bg-tech-blue font-extrabold text-[11px] text-white shadow-sm">
+              {getInitials(user?.name)}
+            </span>
+            <div className="text-left max-sm:hidden">
+              <div className="text-xs font-bold text-slate-800 leading-tight">
+                {user?.name || "Staff User"}
               </div>
-              {notifications.length ? (
-                notifications.map((item) => (
-                  <div
-                    className="flex gap-2 border-b border-slate-100 px-0.5 py-3 text-xs leading-5 text-slate-600"
-                    key={item.id}
-                  >
-                    <span className="mt-1 size-1.5 shrink-0 rounded-full bg-tech-blue" />
-                    <span>{item.text}</span>
-                  </div>
-                ))
-              ) : (
-                <p className="my-3.5 text-xs text-tech-muted">
-                  You are all caught up.
-                </p>
-              )}
+              <div className="text-[10px] font-semibold text-tech-blue">
+                {user?.role === "SUPERVISOR" ? "Supervisor" : "Operator"}
+              </div>
+            </div>
+          </button>
+
+          {/* User Menu Dropdown */}
+          {userMenuOpen && (
+            <div className="absolute right-0 top-12 z-50 w-48 rounded-xl border border-slate-200 bg-white p-2 shadow-xl animate-in fade-in duration-150">
+              <div className="px-3 py-2 border-b border-slate-100 mb-1">
+                <p className="text-xs font-bold text-slate-900 truncate">{user?.name}</p>
+                <p className="text-[10px] text-slate-500 truncate">{user?.email}</p>
+              </div>
+              <button
+                onClick={handleLogout}
+                className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-xs font-semibold text-red-600 hover:bg-red-50 transition cursor-pointer"
+              >
+                <LogOut size={14} />
+                <span>Sign Out</span>
+              </button>
             </div>
           )}
-        </div>
-        <div className="flex items-center gap-2 text-xs font-bold">
-          <span className="grid size-8 place-items-center rounded-full bg-tech-blue-soft text-[10px] text-tech-blue">
-            OP
-          </span>
-          <span className="max-sm:hidden">Operator</span>
         </div>
       </div>
     </header>

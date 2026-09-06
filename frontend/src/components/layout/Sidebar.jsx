@@ -1,66 +1,103 @@
 import { NavLink, useNavigate } from "react-router-dom";
-import { ClipboardList, LayoutDashboard, LogOut } from "lucide-react";
+import { ClipboardList, LayoutDashboard, LogOut, X, MessageSquare } from "lucide-react";
+import { useAuth } from "../../context/AuthContext";
 
 const links = [
   { to: "/operator", label: "Dashboard", icon: LayoutDashboard },
   { to: "/operator/requests", label: "Service requests", icon: ClipboardList },
+  { to: "/operator/chat", label: "Group Chat", icon: MessageSquare },
 ];
 
-export default function Sidebar() {
+export default function Sidebar({ isOpen = false, onClose }) {
   const navigate = useNavigate();
-  const logout = () => {
-    localStorage.removeItem("techstar.session");
+  const { logout } = useAuth();
+  const handleLogout = async () => {
+    await logout();
+    if (onClose) onClose();
     navigate("/login");
   };
-  return (
-    <aside className="flex w-60 shrink-0 flex-col border-r border-tech-line bg-white p-6 max-md:w-[72px] max-md:items-center max-md:px-2.5">
-      <div className="flex items-center gap-2.5 pb-9 text-[21px] font-extrabold tracking-tight max-md:justify-center">
-        <span className="grid size-[29px] place-items-center rounded-lg bg-tech-blue text-white">
-          T
-        </span>
-        <span className="max-md:hidden">
-          Tech<span className="text-amber-600">Star</span>
-        </span>
+
+  const sidebarContent = (
+    <>
+      <div className="flex items-center justify-between pb-8">
+        <div className="flex items-center gap-2.5 text-[21px] font-extrabold tracking-tight">
+          <span className="grid size-[29px] place-items-center rounded-lg bg-tech-blue text-white">
+            T
+          </span>
+          <span>
+            Tech<span className="text-amber-600">Star</span>
+          </span>
+        </div>
+        {onClose && (
+          <button
+            className="md:hidden grid size-8 place-items-center rounded-lg text-slate-400 hover:bg-slate-100 hover:text-slate-600 cursor-pointer"
+            type="button"
+            onClick={onClose}
+            aria-label="Close menu"
+          >
+            <X size={20} />
+          </button>
+        )}
       </div>
-      <div className="mb-2.5 w-full px-3 text-[10px] font-bold tracking-[1.2px] text-slate-400 max-md:hidden">
+
+      <div className="mb-2.5 w-full px-3 text-[10px] font-bold tracking-[1.2px] text-slate-400">
         OPERATIONS
       </div>
-      <nav className="w-full">
+
+      <nav className="w-full space-y-1">
         {links.map(({ to, label, icon: Icon }) => (
           <NavLink
             key={to}
             end={to === "/operator"}
             to={to}
+            onClick={() => onClose && onClose()}
             className={({ isActive }) =>
-              `mb-1 flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition ${isActive ? "bg-tech-blue-soft text-tech-blue" : "text-slate-500 hover:bg-slate-50 hover:text-tech-blue"} max-md:justify-center max-md:px-2.5 max-md:text-[0px]`
+              `flex items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold transition ${
+                isActive
+                  ? "bg-tech-blue-soft text-tech-blue font-bold"
+                  : "text-slate-500 hover:bg-slate-50 hover:text-tech-blue"
+              }`
             }
           >
             <Icon size={18} />
-            {label}
+            <span>{label}</span>
           </NavLink>
         ))}
       </nav>
+
       <div className="mt-auto w-full border-t border-tech-line pt-5">
-        <div className="flex items-center gap-2.5 px-3 max-md:justify-center max-md:px-0">
-          <span className="grid size-8 shrink-0 place-items-center rounded-full bg-tech-blue-soft text-[10px] font-extrabold text-tech-blue">
-            OP
-          </span>
-          <div className="max-md:hidden">
-            <strong className="block text-xs">Operator</strong>
-            <small className="mt-0.5 block text-xs text-tech-muted">
-              Operations desk
-            </small>
-          </div>
-        </div>
         <button
-          className="mt-5 flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-slate-500 transition hover:bg-red-50 hover:text-red-600 max-md:justify-center max-md:px-2.5 max-md:text-[0px]"
+          className="flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-[13px] font-semibold text-slate-500 transition hover:bg-red-50 hover:text-red-600 cursor-pointer"
           type="button"
-          onClick={logout}
+          onClick={handleLogout}
         >
           <LogOut size={18} />
           Logout
         </button>
       </div>
-    </aside>
+    </>
+  );
+
+  return (
+    <>
+      {/* Desktop sidebar */}
+      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-tech-line bg-white p-6 sticky top-0 h-screen overflow-y-auto">
+        {sidebarContent}
+      </aside>
+
+
+      {/* Mobile drawer */}
+      {isOpen && (
+        <div className="fixed inset-0 z-50 md:hidden flex">
+          <div
+            className="fixed inset-0 bg-slate-900/50 backdrop-blur-xs transition-opacity"
+            onClick={onClose}
+          />
+          <div className="relative z-50 flex w-72 max-w-[80vw] flex-col bg-white p-6 shadow-2xl animate-in slide-in-from-left duration-200">
+            {sidebarContent}
+          </div>
+        </div>
+      )}
+    </>
   );
 }

@@ -7,9 +7,11 @@ import {
   connectOperatorSocket,
   setTechnicianReservation,
 } from "../../sockets/serviceRequest.socket";
+import { useAuth } from "../../context/AuthContext";
 import SelectField from "../../components/common/SelectField";
 import StatusBadge from "../../components/serviceRequest/StatusBadge";
 import StatusTimeline from "../../components/serviceRequest/StatusTimeline";
+import PrintableServiceRequest from "../../components/serviceRequest/PrintableServiceRequest";
 import Loading from "../../components/common/Loading";
 
 const statuses = [
@@ -22,7 +24,6 @@ const statuses = [
   "FAILED",
   "CANCELLED",
 ];
-const operatorId = import.meta.env.VITE_OPERATOR_ID || "";
 const date = (value, withTime = false) =>
   value
     ? new Intl.DateTimeFormat("en", {
@@ -33,6 +34,8 @@ const date = (value, withTime = false) =>
 
 export default function ServiceRequestDetails() {
   const { id } = useParams();
+  const { user } = useAuth();
+  const operatorId = user?.id || null;
   const [request, setRequest] = useState(null);
   const [history, setHistory] = useState([]);
   const [technicians, setTechnicians] = useState([]);
@@ -40,6 +43,7 @@ export default function ServiceRequestDetails() {
   const [selectedTech, setSelectedTech] = useState("");
   const [selectedStatus, setSelectedStatus] = useState("");
   const [progress, setProgress] = useState(0);
+  const [paymentAmount, setPaymentAmount] = useState("");
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState("");
   const [message, setMessage] = useState("");
@@ -59,12 +63,14 @@ export default function ServiceRequestDetails() {
       setSelectedTech(item.technician_id || "");
       setSelectedStatus(item.status);
       setProgress(item.progress || 0);
+      setPaymentAmount(item.payment_amount !== null && item.payment_amount !== undefined ? String(item.payment_amount) : "");
     } catch (requestError) {
       setError(requestError.message);
     } finally {
       setLoading(false);
     }
   };
+
 
   useEffect(() => {
     const timer = setTimeout(load, 0);
@@ -206,6 +212,15 @@ export default function ServiceRequestDetails() {
                 <span>Assigned technician</span>
                 <strong>{request.technician?.name || "Unassigned"}</strong>
               </div>
+              <div>
+                <span>Service Amount</span>
+                <strong>
+                  {request.payment_amount !== null && request.payment_amount !== undefined
+                    ? `৳ ${Number(request.payment_amount).toLocaleString("en-BD")}`
+                    : "Not set"}
+                </strong>
+              </div>
+
               <div className="wide">
                 <span>Device information</span>
                 <strong>{request.device_info}</strong>
@@ -353,8 +368,57 @@ export default function ServiceRequestDetails() {
               {saving === "progress" ? "Saving..." : "Save progress"}
             </button>
           </section>
+
+          <section className="panel action-panel">
+            <h2>Payment & Billing</h2>
+            {selectedStatus === "COMPLETED" || request.status === "COMPLETED" ? (
+              <>
+                <label className="text-xs font-semibold text-slate-600 block">
+                  Payment Amount (৳)
+                  <input
+                    className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold focus:border-tech-blue outline-none"
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    placeholder="Enter final payment amount"
+                    value={paymentAmount}
+                    onChange={(e) => setPaymentAmount(e.target.value)}
+                  />
+                </label>
+                <button
+                  className="button primary full mt-3 cursor-pointer"
+                  disabled={
+                    saving === "payment" ||
+                    !operatorId ||
+                    (paymentAmount === String(request.payment_amount ?? "") && selectedStatus === request.status)
+                  }
+                  onClick={() =>
+                    mutate("payment", () =>
+                      serviceRequestApi.update(id, {
+                        ...(selectedStatus !== request.status ? { status: selectedStatus } : {}),
+                        paymentAmount: paymentAmount !== "" ? Number(paymentAmount) : null,
+                        changedBy: operatorId,
+                        note: `Payment amount set to ৳${paymentAmount || 0}${selectedStatus !== request.status ? ` and status set to ${selectedStatus}` : ""}`,
+                      }),
+                    )
+                  }
+                >
+                  {saving === "payment" ? "Updating Payment..." : "Save Payment & Completed Status"}
+                </button>
+              </>
+            ) : (
+              <p className="text-xs text-tech-muted italic bg-slate-50 p-3 rounded-lg border border-slate-200">
+                Payment amount becomes applicable when the service status is set to <strong>COMPLETED</strong>.
+              </p>
+            )}
+          </section>
+
+
         </aside>
       </div>
+
+      {/* Print-only slip — hidden on screen, shown during window.print() */}
+      <PrintableServiceRequest request={request} />
     </>
   );
 }
