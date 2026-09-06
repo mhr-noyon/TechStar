@@ -23,7 +23,7 @@ export async function create(req, res, next) {
 
 export async function list(req, res, next) {
   try {
-    const data = await listRequests();
+    const data = await listRequests(req.query);
     return res.json({ success: true, data });
   } catch (error) {
     return next(error);

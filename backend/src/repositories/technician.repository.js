@@ -66,3 +66,14 @@ export async function changeActiveJobs(userId, amount) {
   if (error) throw error;
   return data;
 }
+
+export async function updateTechnicianProfile(id, changes) {
+  const { data, error } = await supabase
+    .from("technicians")
+    .update(changes)
+    .eq("id", id)
+    .select("*, user:users(id, name, email, phone)")
+    .single();
+  if (error) throw error;
+  return data;
+}

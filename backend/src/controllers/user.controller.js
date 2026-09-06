@@ -3,6 +3,7 @@ import {
   createCustomer,
   createTechnician,
   findCustomerByPhone,
+  listUsers,
   updateUserDetails,
 } from "../services/user.service.js";
 
@@ -46,6 +47,15 @@ export async function createCustomerUser(req, res, next) {
   try {
     const data = await createCustomer(req.body);
     return res.status(201).json({ success: true, data });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+export async function list(req, res, next) {
+  try {
+    const { role, ...options } = req.query;
+    return res.json({ success: true, data: await listUsers(role, options) });
   } catch (error) {
     return next(error);
   }

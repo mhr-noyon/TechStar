@@ -42,7 +42,13 @@ export async function createUser({ name, email, phone, passwordHash }) {
   return data;
 }
 
-export async function createStaffUser({ name, email, phone, passwordHash, role }) {
+export async function createStaffUser({
+  name,
+  email,
+  phone,
+  passwordHash,
+  role,
+}) {
   const { data, error } = await supabase
     .from("users")
     .insert({
@@ -71,7 +77,11 @@ export async function updateUser(id, changes) {
   return data;
 }
 
-export async function createTechnicianProfile({ userId, specialization, maxCapacity }) {
+export async function createTechnicianProfile({
+  userId,
+  specialization,
+  maxCapacity,
+}) {
   const { data, error } = await supabase
     .from("technicians")
     .insert({
@@ -94,6 +104,30 @@ export async function findUserByPhone(phone) {
     .eq("role", "CUSTOMER")
     .maybeSingle();
 
+  if (error) throw error;
+  return data;
+}
+
+export async function findUsersByRole(role, options = {}) {
+  const { sortBy = "created_at", sortOrder = "desc", search } = options;
+
+  let query = supabase.from("users").select(publicUserFields);
+
+  if (role) {
+    query = query.eq("role", role);
+  }
+
+  if (search) {
+    query = query.or(`name.ilike.%${search}%,email.ilike.%${search}%,phone.ilike.%${search}%`);
+  }
+
+  const isAscending = sortOrder.toLowerCase() === "asc";
+  const validColumns = ["name", "created_at", "email", "phone"];
+  const sortCol = validColumns.includes(sortBy) ? sortBy : "created_at";
+
+  query = query.order(sortCol, { ascending: isAscending });
+
+  const { data, error } = await query;
   if (error) throw error;
   return data;
 }

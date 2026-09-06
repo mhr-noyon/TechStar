@@ -4,6 +4,7 @@ import {
   createTechnicianProfile,
   createUser as createCustomerRecord,
   findUserByPhone,
+  findUsersByRole,
   updateUser,
 } from "../repositories/user.repository.js";
 
@@ -17,7 +18,8 @@ function validateUserFields({ name, email, phone, password }) {
   if (!name || !email || !phone || !password) {
     throw userError("name, email, phone and password are required");
   }
-  if (password.length < 8) throw userError("Password must be at least 8 characters");
+  if (password.length < 8)
+    throw userError("Password must be at least 8 characters");
 }
 
 async function createUser(data, role) {
@@ -38,7 +40,11 @@ export async function createTechnician(data) {
   }
 
   const passwordHash = await bcrypt.hash(data.password, 12);
-  const user = await createStaffUser({ ...data, passwordHash, role: "TECHNICIAN" });
+  const user = await createStaffUser({
+    ...data,
+    passwordHash,
+    role: "TECHNICIAN",
+  });
   const technician = await createTechnicianProfile({
     userId: user.id,
     specialization: data.specialization,
@@ -54,11 +60,13 @@ export async function updateUserDetails(id, data) {
   if (data.email !== undefined) changes.email = data.email;
   if (data.phone !== undefined) changes.phone = data.phone;
   if (data.password !== undefined) {
-    if (data.password.length < 8) throw userError("Password must be at least 8 characters");
+    if (data.password.length < 8)
+      throw userError("Password must be at least 8 characters");
     changes.password_hash = await bcrypt.hash(data.password, 12);
   }
 
-  if (Object.keys(changes).length === 0) throw userError("No user fields supplied");
+  if (Object.keys(changes).length === 0)
+    throw userError("No user fields supplied");
   return updateUser(id, changes);
 }
 
@@ -75,4 +83,8 @@ export async function createCustomer(data) {
 
   const passwordHash = await bcrypt.hash(`${phone}-${Date.now()}`, 12);
   return createCustomerRecord({ name, email, phone, passwordHash });
+}
+
+export function listUsers(role, options) {
+  return findUsersByRole(role, options);
 }

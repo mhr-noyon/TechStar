@@ -5,7 +5,12 @@ import { env } from "./config/env.js";
 import serviceRequestRoutes from "./routes/serviceRequest.routes.js";
 import technicianRoutes from "./routes/technician.routes.js";
 import userRoutes from "./routes/user.routes.js";
+import supervisorRoutes from "./routes/supervisor.routes.js";
+import authRoutes from "./routes/auth.routes.js";
+import chatRoutes from "./routes/chat.routes.js";
+import notificationRoutes from "./routes/notification.routes.js";
 import { errorHandler } from "./middleware/error.middleware.js";
+import { globalRateLimiter } from "./middleware/rateLimit.middleware.js";
 
 const app = express();
 
@@ -24,13 +29,19 @@ app.use(
       return callback(new Error("Not allowed by CORS"));
     },
     credentials: true,
-  }));
-  
-app.use(express.json());
+  }),
+);
 
+app.use(express.json());
+app.use(globalRateLimiter);
+
+app.use("/api/auth", authRoutes);
+app.use("/api/chat", chatRoutes);
+app.use("/api/notifications", notificationRoutes);
 app.use("/api/service-requests", serviceRequestRoutes);
 app.use("/api/technicians", technicianRoutes);
 app.use("/api/users", userRoutes);
+app.use("/api/supervisor", supervisorRoutes);
 
 app.get("/api", (req, res) => {
   res.json({
@@ -42,9 +53,7 @@ app.get("/api", (req, res) => {
 // Test Supabase connection
 app.get("/api/db-test", async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from("users")
-      .select("*");
+    const { data, error } = await supabase.from("users").select("*");
 
     if (error) {
       console.error("Supabase error:", error);

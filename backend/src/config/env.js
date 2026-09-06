@@ -15,7 +15,16 @@ export const env = {
 
   supabaseSecretKey: process.env.SUPABASE_SECRET_KEY,
 
-  jwtSecret: process.env.JWT_SECRET,
+  databaseUrl: process.env.DATABASE_URL,
+
+  jwtSecret: process.env.JWT_SECRET || "techstar_jwt_secret_key_2026_default",
+
+  jwtRefreshSecret: process.env.JWT_REFRESH_SECRET || "techstar_jwt_refresh_secret_key_2026_default",
 
   allowedOrigins,
+
+  // Rate Limiting Configuration
+  rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000, // 1 minute
+  rateLimitMaxGlobal: Number(process.env.RATE_LIMIT_MAX_GLOBAL) || 120, // 120 requests/min/IP
+  rateLimitMaxSensitive: Number(process.env.RATE_LIMIT_MAX_SENSITIVE) || 10, // 10 requests/min/IP for login & track
 };
