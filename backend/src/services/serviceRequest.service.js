@@ -107,19 +107,6 @@ export async function createRequest({
   });
   emitServiceRequestCreated(request, history);
 
-  try {
-    await createAndDistributeNotification({
-      title: `New Service Request #SR-${request.id}`,
-      message: `Created for device: ${deviceInfo}`,
-      type: "NEW_SERVICE_REQUEST",
-      link_url: `/requests/${request.id}`,
-      targetRoles: ["OPERATOR", "SUPERVISOR"],
-      excludeUserId: createdBy,
-    });
-  } catch (err) {
-    console.warn("Could not send new request notification:", err.message);
-  }
-
   // Queue Graphile Worker confirmation email job immediately after DB success
   try {
     await enqueueJob("send-service-request-email", {
@@ -189,20 +176,6 @@ export async function assignRequest(id, { technicianId, changedBy }) {
   );
   emitServiceRequestAssigned(updated, technicianId, changedBy, history);
 
-  try {
-    await createAndDistributeNotification({
-      title: `Technician Assigned to #SR-${updated.id}`,
-      message: `Assigned to technician for repair work`,
-      type: "TECHNICIAN_ASSIGNMENT",
-      link_url: `/requests/${updated.id}`,
-      targetRoles: ["OPERATOR", "SUPERVISOR"],
-      targetUserIds: [technicianId],
-      excludeUserId: changedBy,
-    });
-  } catch (err) {
-    console.warn("Could not send assignment notification:", err.message);
-  }
-
   return updated;
 }
 
@@ -249,21 +222,7 @@ export async function updateRequest(id, changes) {
   emitServiceRequestStatusUpdated(updated, changedBy, history);
 
   try {
-    const isPaymentChange = update.payment_amount !== undefined && update.payment_amount !== request.payment_amount;
     const isStatusChange = update.status !== undefined && update.status !== request.status;
-
-    if (isPaymentChange || isStatusChange) {
-      await createAndDistributeNotification({
-        title: isPaymentChange ? `Payment Updated for #SR-${updated.id}` : `Status Updated for #SR-${updated.id}`,
-        message: isPaymentChange
-          ? `Payment amount set to $${updated.payment_amount}`
-          : `Status changed to ${updated.status.replaceAll("_", " ")}`,
-        type: isPaymentChange ? "PAYMENT_UPDATE" : "STATUS_UPDATE",
-        link_url: `/requests/${updated.id}`,
-        targetRoles: ["OPERATOR", "SUPERVISOR"],
-        excludeUserId: changedBy,
-      });
-    }
 
     if (isStatusChange && ["READY_FOR_DELIVERY", "FAILED"].includes(update.status)) {
       await enqueueJob("send-service-request-email", {
@@ -273,7 +232,7 @@ export async function updateRequest(id, changes) {
       });
     }
   } catch (err) {
-    console.warn("Could not send update notification or enqueue status email job:", err.message);
+    console.warn("Could not enqueue status email job:", err.message);
   }
 
   return updated;
@@ -337,20 +296,6 @@ async function updateWithHistory(id, changes, changedBy, note) {
   emitServiceRequestStatusUpdated(updated, changedBy, history);
 
   try {
-    if (changes.status !== undefined || changes.progress !== undefined) {
-      const isStatus = changes.status !== undefined;
-      await createAndDistributeNotification({
-        title: isStatus ? `Status Updated for #SR-${updated.id}` : `Progress Updated for #SR-${updated.id}`,
-        message: isStatus
-          ? `Status changed to ${updated.status.replaceAll("_", " ")}`
-          : `Progress updated to ${updated.progress}%`,
-        type: isStatus ? "STATUS_UPDATE" : "PROGRESS_UPDATE",
-        link_url: `/requests/${updated.id}`,
-        targetRoles: ["OPERATOR", "SUPERVISOR"],
-        excludeUserId: changedBy,
-      });
-    }
-    
     // Trigger email job for status updates like READY_FOR_DELIVERY or FAILED
     if (changes.status && ["READY_FOR_DELIVERY", "FAILED"].includes(changes.status)) {
       await enqueueJob("send-service-request-email", {
@@ -360,7 +305,7 @@ async function updateWithHistory(id, changes, changedBy, note) {
       });
     }
   } catch (err) {
-    console.warn("Could not send update notification or enqueue status email job:", err.message);
+    console.warn("Could not enqueue status email job:", err.message);
   }
 
   return updated;
