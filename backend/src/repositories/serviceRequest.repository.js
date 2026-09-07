@@ -38,6 +38,14 @@ export async function findServiceRequests(options = {}) {
     query = query.eq("priority", priority);
   }
 
+  if (options.technicianId) {
+    query = query.eq("technician_id", options.technicianId);
+  }
+
+  if (options.customerId) {
+    query = query.eq("customer_id", options.customerId);
+  }
+
   if (search) {
     query = query.or(`device_brand.ilike.%${search}%,device_model.ilike.%${search}%,problem_description.ilike.%${search}%,customer_access_code.ilike.%${search}%`);
   }

@@ -15,19 +15,25 @@ import {
 
 import { sensitiveRateLimiter } from "../middleware/rateLimit.middleware.js";
 
+import { authenticateToken, authorizeRoles } from "../middleware/auth.middleware.js";
+
 const router = Router();
 
-// Have to connect authentication and role authorization here later.
-router.post("/", create);
-router.get("/", list);
+// Intentionally public endpoint for customers tracking requests via ID and access code
 router.get("/track", sensitiveRateLimiter, track);
+
+// Require authentication for all subsequent service request endpoints
+router.use(authenticateToken);
+
+router.post("/", authorizeRoles("OPERATOR", "SUPERVISOR"), create);
+router.get("/", list);
 router.get("/:id/history", getHistory);
-router.patch("/:id/assign", assign);
-router.patch("/:id/status", updateStatus);
-router.patch("/:id/progress", updateProgress);
-router.patch("/:id/complete", complete);
-router.patch("/:id/cancel", cancel);
-router.patch("/:id", update);
+router.patch("/:id/assign", authorizeRoles("OPERATOR", "SUPERVISOR"), assign);
+router.patch("/:id/status", authorizeRoles("OPERATOR", "SUPERVISOR"), updateStatus);
+router.patch("/:id/progress", authorizeRoles("OPERATOR", "SUPERVISOR"), updateProgress);
+router.patch("/:id/complete", authorizeRoles("OPERATOR", "SUPERVISOR"), complete);
+router.patch("/:id/cancel", authorizeRoles("OPERATOR", "SUPERVISOR"), cancel);
+router.patch("/:id", authorizeRoles("OPERATOR", "SUPERVISOR"), update);
 router.get("/:id", getOne);
 
 export default router;

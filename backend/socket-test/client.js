@@ -1,6 +1,7 @@
 import { io } from "socket.io-client";
+import { env } from "../src/config/env.js";
 
-const socket = io("http://localhost:5000");
+const socket = io(`${env.serverUrl}`);
 
 socket.on("connect", () => {
     console.log("✅ Connected to Socket.IO");

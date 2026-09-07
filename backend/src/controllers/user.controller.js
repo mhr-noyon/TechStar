@@ -25,8 +25,31 @@ export async function createTechnicianUser(req, res, next) {
   }
 }
 
+import { findUserById } from "../repositories/user.repository.js";
+
+async function checkUserUpdateAccess(caller, targetUserId) {
+  if (caller.role === "SUPERVISOR") return true;
+  if (caller.id === targetUserId) return true;
+  
+  const targetUser = await findUserById(targetUserId);
+  if (!targetUser) {
+    const error = new Error("User not found");
+    error.statusCode = 404;
+    throw error;
+  }
+  
+  if (caller.role === "OPERATOR" && targetUser.role === "CUSTOMER") {
+    return true;
+  }
+  
+  const error = new Error("Access denied. You are not authorized to update this user.");
+  error.statusCode = 403;
+  throw error;
+}
+
 export async function update(req, res, next) {
   try {
+    await checkUserUpdateAccess(req.user, req.params.id);
     const data = await updateUserDetails(req.params.id, req.body);
     return res.json({ success: true, data });
   } catch (error) {

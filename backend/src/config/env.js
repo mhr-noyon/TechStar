@@ -27,4 +27,15 @@ export const env = {
   rateLimitWindowMs: Number(process.env.RATE_LIMIT_WINDOW_MS) || 60 * 1000, // 1 minute
   rateLimitMaxGlobal: Number(process.env.RATE_LIMIT_MAX_GLOBAL) || 120, // 120 requests/min/IP
   rateLimitMaxSensitive: Number(process.env.RATE_LIMIT_MAX_SENSITIVE) || 10, // 10 requests/min/IP for login & track
+
+  // SMTP Mail Configuration
+  smtpHost: process.env.SMTP_HOST || "",
+  smtpPort: Number(process.env.SMTP_PORT) || 587,
+  smtpSecure: process.env.SMTP_SECURE === "true",
+  smtpUser: process.env.SMTP_USER || "",
+  smtpPass: process.env.SMTP_PASS || "",
+  mailFrom: process.env.MAIL_FROM || "Service Request Created <mhnoyonmd141@gmail.com>",
+
+  clientUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+  serverUrl: process.env.SERVER_URL || "http://localhost:5000",
 };

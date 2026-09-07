@@ -19,6 +19,7 @@ import {
   emitServiceRequestStatusUpdated,
 } from "../sockets/serviceRequest.socket.js";
 import { createAndDistributeNotification } from "./notification.service.js";
+import { enqueueJob } from "../workers/index.js";
 
 const statuses = [
   "RECEIVED",
@@ -117,6 +118,17 @@ export async function createRequest({
     });
   } catch (err) {
     console.warn("Could not send new request notification:", err.message);
+  }
+
+  // Queue Graphile Worker confirmation email job immediately after DB success
+  try {
+    await enqueueJob("send-service-request-email", {
+      requestId: request.id,
+      status: "RECEIVED",
+      attempt: 1,
+    });
+  } catch (err) {
+    console.warn("Could not enqueue service request email job:", err.message);
   }
 
   return request;
@@ -252,8 +264,16 @@ export async function updateRequest(id, changes) {
         excludeUserId: changedBy,
       });
     }
+
+    if (isStatusChange && ["READY_FOR_DELIVERY", "FAILED"].includes(update.status)) {
+      await enqueueJob("send-service-request-email", {
+        requestId: updated.id,
+        status: update.status,
+        attempt: 1,
+      });
+    }
   } catch (err) {
-    console.warn("Could not send update notification:", err.message);
+    console.warn("Could not send update notification or enqueue status email job:", err.message);
   }
 
   return updated;
@@ -330,8 +350,17 @@ async function updateWithHistory(id, changes, changedBy, note) {
         excludeUserId: changedBy,
       });
     }
+    
+    // Trigger email job for status updates like READY_FOR_DELIVERY or FAILED
+    if (changes.status && ["READY_FOR_DELIVERY", "FAILED"].includes(changes.status)) {
+      await enqueueJob("send-service-request-email", {
+        requestId: updated.id,
+        status: changes.status,
+        attempt: 1,
+      });
+    }
   } catch (err) {
-    console.warn("Could not send update notification:", err.message);
+    console.warn("Could not send update notification or enqueue status email job:", err.message);
   }
 
   return updated;

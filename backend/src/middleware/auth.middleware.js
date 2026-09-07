@@ -8,7 +8,7 @@ export function authenticateToken(req, res, next) {
   if (!token) {
     return res.status(401).json({
       success: false,
-      message: "Access token required. Please log in.",
+      message: "Authentication failed. Please log in.",
     });
   }
 

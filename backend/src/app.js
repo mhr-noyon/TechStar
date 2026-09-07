@@ -50,10 +50,12 @@ app.get("/api", (req, res) => {
   });
 });
 
-// Test Supabase connection
-app.get("/api/db-test", async (req, res) => {
+import { authenticateToken, authorizeRoles } from "./middleware/auth.middleware.js";
+
+// Test Supabase connection (restricted to Supervisor)
+app.get("/api/db-test", authenticateToken, authorizeRoles("SUPERVISOR"), async (req, res) => {
   try {
-    const { data, error } = await supabase.from("users").select("*");
+    const { data, error } = await supabase.from("users").select("id, name, role");
 
     if (error) {
       console.error("Supabase error:", error);
@@ -65,13 +67,10 @@ app.get("/api/db-test", async (req, res) => {
       });
     }
 
-    console.log("Users:", data);
-
     res.status(200).json({
       success: true,
       message: "Supabase connection successful",
       count: data.length,
-      data,
     });
   } catch (error) {
     console.error("Server error:", error);
