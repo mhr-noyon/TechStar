@@ -22,7 +22,7 @@ export default function Sidebar({ isOpen = false, onClose }) {
       <div className="flex items-center justify-between pb-8">
         <div className="flex items-center gap-2.5 text-[21px] font-extrabold tracking-tight">
           <span className="grid size-[29px] place-items-center rounded-lg bg-tech-blue text-white">
-            T
+            TS
           </span>
           <span>
             Tech<span className="text-amber-600">Star</span>
@@ -81,7 +81,7 @@ export default function Sidebar({ isOpen = false, onClose }) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-tech-line bg-white p-6 sticky top-0 h-screen overflow-y-auto">
+      <aside className="hidden md:flex w-60 shrink-0 flex-col border-r border-tech-line bg-white p-6 sticky top-0 h-screen overflow-y-auto print:hidden">
         {sidebarContent}
       </aside>
 

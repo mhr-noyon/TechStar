@@ -97,7 +97,7 @@ export default function SupervisorSidebar({ isOpen = false, onClose }) {
   return (
     <>
       {/* Desktop sidebar */}
-      <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-tech-line bg-white p-5 sticky top-0 h-screen overflow-y-auto">
+      <aside className="hidden lg:flex w-64 shrink-0 flex-col border-r border-tech-line bg-white p-5 sticky top-0 h-screen overflow-y-auto print:hidden">
         {sidebarContent}
       </aside>
 

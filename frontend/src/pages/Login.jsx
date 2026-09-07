@@ -7,8 +7,8 @@ import Dropdown from "../components/common/Dropdown";
 export default function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [role, setRole] = useState("OPERATOR");
-  const [email, setEmail] = useState("karim@techstar.com");
-  const [password, setPassword] = useState("password123");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
@@ -26,11 +26,11 @@ export default function Login() {
   const handleRoleChange = (newRole) => {
     setRole(newRole);
     if (newRole === "OPERATOR") {
-      setEmail("karim@techstar.com");
+      setEmail("");
     } else {
-      setEmail("fahim@techstar.com");
+      setEmail("");
     }
-    setPassword("password123");
+    setPassword("");
     setError("");
   };
 
@@ -136,14 +136,6 @@ export default function Login() {
                 </button>
               </div>
             </label>
-
-            <div className="rounded-lg bg-slate-50 border border-slate-200 p-3 text-[11px] text-slate-600 space-y-1">
-              <p className="font-bold text-slate-800">Quick Demo Login:</p>
-              <p>• Operator: <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-900">karim@techstar.com</code></p>
-              <p>• Supervisor: <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-900">fahim@techstar.com</code></p>
-              <p>• Password: <code className="bg-slate-200 px-1 py-0.5 rounded font-mono text-slate-900">password123</code></p>
-            </div>
-
             <button
               className="flex h-11 w-full items-center justify-center rounded-lg border-0 bg-tech-blue text-sm font-bold text-white cursor-pointer hover:bg-sky-600 transition disabled:opacity-50"
               type="submit"

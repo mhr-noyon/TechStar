@@ -15,13 +15,14 @@ import SupervisorServiceRequests from "./pages/supervisor/SupervisorServiceReque
 import SupervisorDirectory from "./pages/supervisor/SupervisorDirectory";
 import SupervisorLogs from "./pages/supervisor/SupervisorLogs";
 import { AuthProvider } from "./context/AuthContext";
+import { PeriodProvider } from "./context/PeriodContext";
 import ProtectedRoute from "./components/auth/ProtectedRoute";
-import "./App.css";
 
 function App() {
   return (
     <AuthProvider>
-      <BrowserRouter>
+      <PeriodProvider>
+        <BrowserRouter>
         <Routes>
           <Route
             path="/"
@@ -68,6 +69,10 @@ function App() {
             <Route
               path="/supervisor/service-requests"
               element={<SupervisorServiceRequests />}
+            />
+            <Route
+              path="/supervisor/requests/:id"
+              element={<ServiceRequestDetails />}
             />
             <Route
               path="/supervisor/service-requests/:id"
@@ -132,6 +137,7 @@ function App() {
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </BrowserRouter>
+      </PeriodProvider>
     </AuthProvider>
   );
 }

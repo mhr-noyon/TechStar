@@ -5,6 +5,7 @@ import { supervisorApi } from "../../services/supervisor.api";
 import Loading from "../../components/common/Loading";
 import EmptyState from "../../components/common/EmptyState";
 import StatusBadge from "../../components/serviceRequest/StatusBadge";
+import Dropdown from "../../components/common/Dropdown";
 import { connectOperatorSocket } from "../../sockets/serviceRequest.socket";
 
 const statuses = [
@@ -187,32 +188,34 @@ export default function SupervisorServiceRequests() {
             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
               <Filter size={15} />
               <span>Status:</span>
-              <select
-                className="h-9 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold outline-none cursor-pointer"
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-              >
-                <option value="ALL">All Statuses</option>
-                {statuses.map((s) => (
-                  <option key={s} value={s}>
-                    {s.replaceAll("_", " ")}
-                  </option>
-                ))}
-              </select>
+              <div className="w-44">
+                <Dropdown
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                >
+                  <option value="ALL">All Statuses</option>
+                  {statuses.map((s) => (
+                    <option key={s} value={s}>
+                      {s.replaceAll("_", " ")}
+                    </option>
+                  ))}
+                </Dropdown>
+              </div>
             </div>
 
             <div className="flex items-center gap-1.5 text-xs font-semibold text-slate-500">
               <span>Priority:</span>
-              <select
-                className="h-9 rounded-lg border border-slate-200 px-2.5 text-xs font-semibold outline-none cursor-pointer"
-                value={priorityFilter}
-                onChange={(e) => setPriorityFilter(e.target.value)}
-              >
-                <option value="ALL">All Priorities</option>
-                <option value="NORMAL">NORMAL</option>
-                <option value="HIGH">HIGH</option>
-                <option value="URGENT">URGENT</option>
-              </select>
+              <div className="w-36">
+                <Dropdown
+                  value={priorityFilter}
+                  onChange={(e) => setPriorityFilter(e.target.value)}
+                >
+                  <option value="ALL">All Priorities</option>
+                  <option value="NORMAL">NORMAL</option>
+                  <option value="HIGH">HIGH</option>
+                  <option value="URGENT">URGENT</option>
+                </Dropdown>
+              </div>
             </div>
 
             {(statusFilter !== "ALL" || priorityFilter !== "ALL" || query) && (
@@ -247,7 +250,7 @@ export default function SupervisorServiceRequests() {
                     ["created_at", "Created"],
                   ].map(([field, label]) => (
                     <th
-                      className="px-4 py-3 cursor-pointer select-none hover:bg-slate-100 transition"
+                      className="px-4 py-3 min-w-[80px] cursor-pointer select-none hover:bg-slate-100 transition"
                       key={field}
                       onClick={() => handleSort(field)}
                     >

@@ -156,69 +156,73 @@ export default function ServiceRequestDetails() {
   return (
     <>
       <div className="print:hidden">
-        <div className="page-heading compact">
-          <div>
-            <Link className="back-link" to="/operator/requests">
-              <ArrowLeft size={16} />
-              Back to requests
-            </Link>
-            <div className="title-line">
-              <h1>Request SR-{request.id}</h1>
-              <StatusBadge status={request.status} />
-            </div>
-            <p className="subtitle">
-              Created {date(request.created_at, true)} · Updated{" "}
-              {date(request.updated_at, true)}
-            </p>
+        <div className="mb-6">
+          <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-tech-blue hover:underline mb-2" to="/operator/requests">
+            <ArrowLeft size={16} />
+            Back to requests
+          </Link>
+          <div className="flex items-center gap-3 my-1">
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Request SR-{request.id}</h1>
+            <StatusBadge status={request.status} />
           </div>
+          <p className="text-xs text-tech-muted">
+            Created {date(request.created_at, true)} · Updated{" "}
+            {date(request.updated_at, true)}
+          </p>
         </div>
-        {error && <div className="alert error">{error}</div>}
+        {error && <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div>}
         {message && (
-          <div className="alert success">
+          <div className="mb-6 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">
             <Check size={16} />
             {message}
           </div>
         )}
-        <div className="details-grid">
-          <div className="details-main">
-            <section className="panel">
-              <div className="panel-heading">
+        <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-1">
+          <div className="col-span-2 space-y-6 max-lg:col-span-1">
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
                 <div>
-                  <h2>Request details</h2>
-                  <p>Customer, device, and delivery information</p>
+                  <h2 className="text-lg font-extrabold text-slate-900">Request details</h2>
+                  <p className="text-xs text-tech-muted">Customer, device, and delivery information</p>
                 </div>
                 <span
-                  className={`priority priority-${request.priority.toLowerCase()}`}
+                  className={`inline-block rounded-md border px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide ${
+                    request.priority === "URGENT"
+                      ? "bg-red-50 text-red-700 border-red-200"
+                      : request.priority === "HIGH"
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-slate-100 text-slate-700 border-slate-200"
+                  }`}
                 >
                   {request.priority}
                 </span>
               </div>
-              <div className="info-grid">
+              <div className="grid grid-cols-2 gap-4 text-xs max-sm:grid-cols-1">
                 <div>
-                  <span>Customer name</span>
-                  <strong>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Customer name</span>
+                  <strong className="text-sm font-bold text-slate-800">
                     {request.customer?.name || "Customer unavailable"}
                   </strong>
                 </div>
                 <div>
-                  <span>Phone & email</span>
-                  <strong>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Phone & email</span>
+                  <strong className="text-sm font-bold text-slate-800">
                     {request.customer?.phone || "No phone"}
                     <br />
                     {request.customer?.email || "No email"}
                   </strong>
                 </div>
                 <div>
-                  <span>Expected delivery</span>
-                  <strong>{date(request.expected_delivery_at)}</strong>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Expected delivery</span>
+                  <strong className="text-sm font-bold text-slate-800">{date(request.expected_delivery_at)}</strong>
                 </div>
                 <div>
-                  <span>Assigned technician</span>
-                  <strong>{request.technician?.name || "Unassigned"}</strong>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Assigned technician</span>
+                  <strong className="text-sm font-bold text-slate-800">{request.technician?.name || "Unassigned"}</strong>
                 </div>
                 <div>
-                  <span>Service Amount</span>
-                  <strong>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Service Amount</span>
+                  <strong className="text-sm font-bold text-slate-800">
                     {request.payment_amount !== null &&
                     request.payment_amount !== undefined
                       ? `৳ ${Number(request.payment_amount).toLocaleString("en-BD")}`
@@ -226,38 +230,38 @@ export default function ServiceRequestDetails() {
                   </strong>
                 </div>
 
-                <div className="wide">
-                  <span>Device information</span>
-                  <strong>{request.device_info}</strong>
+                <div className="col-span-2 max-sm:col-span-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Device information</span>
+                  <strong className="text-sm font-semibold text-slate-800">{request.device_info}</strong>
                 </div>
-                <div className="wide">
-                  <span>Problem description</span>
-                  <strong className="long-copy">
+                <div className="col-span-2 max-sm:col-span-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Problem description</span>
+                  <strong className="text-sm font-medium text-slate-700 leading-relaxed block mt-0.5">
                     {request.problem_description}
                   </strong>
                 </div>
               </div>
             </section>
-            <section className="panel grid grid-cols-[1fr_auto_auto] items-center gap-5 border-sky-100 bg-sky-50 max-[700px]:grid-cols-1 print:border print:border-black print:shadow-none">
+            <section className="rounded-2xl border border-sky-100 bg-sky-50 p-6 shadow-2xs grid grid-cols-[1fr_auto_auto] items-center gap-5 max-[700px]:grid-cols-1 print:border print:border-black print:shadow-none">
               <div className="print:hidden">
                 <span className="text-[11px] font-extrabold uppercase tracking-[1.3px] text-tech-blue">
                   Customer handoff
                 </span>
-                <h2 className="my-1 text-base">Printed tracking access</h2>
+                <h2 className="my-1 text-base font-extrabold text-slate-900">Printed tracking access</h2>
                 <p className="m-0 text-xs text-tech-muted">
                   Give the customer this request ID and six-digit code.
                 </p>
               </div>
-              <div className="flex flex-col gap-1 rounded-lg border border-sky-100 bg-white px-4 py-3 text-center max-[700px]:items-start max-[700px]:text-left">
-                <span className="text-[11px] text-tech-muted">
+              <div className="flex flex-col gap-1 rounded-xl border border-sky-100 bg-white px-4 py-3 text-center max-[700px]:items-start max-[700px]:text-left">
+                <span className="text-[11px] font-bold text-tech-muted">
                   Request ID: SR-{request.id}
                 </span>
-                <strong className="font-mono text-[22px] tracking-[3px] text-tech-blue">
+                <strong className="font-mono text-[22px] tracking-[3px] text-tech-blue font-extrabold">
                   {request.customer_access_code || "Not available"}
                 </strong>
               </div>
               <button
-                className="button secondary max-[700px]:w-full print:hidden"
+                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 cursor-pointer max-[700px]:w-full print:hidden"
                 type="button"
                 onClick={() => window.print()}
               >
@@ -265,20 +269,18 @@ export default function ServiceRequestDetails() {
                 Print access slip
               </button>
             </section>
-            <section className="panel">
-              <div className="panel-heading">
-                <div>
-                  <h2>Request history</h2>
-                  <p>Every update recorded against this request</p>
-                </div>
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <div className="border-b border-slate-100 pb-4">
+                <h2 className="text-lg font-extrabold text-slate-900">Request history</h2>
+                <p className="text-xs text-tech-muted">Every update recorded against this request</p>
               </div>
               <StatusTimeline history={history} />
             </section>
           </div>
-          <aside className="details-side">
-            <section className="panel action-panel">
-              <h2>Technician assignment</h2>
-              <p>Live count includes reservations made by other operators.</p>
+          <aside className="space-y-6">
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <h2 className="text-lg font-extrabold text-slate-900">Technician assignment</h2>
+              <p className="text-xs text-tech-muted">Live count includes reservations made by other operators.</p>
               <SelectField
                 label="Technician"
                 value={selectedTech}
@@ -304,19 +306,19 @@ export default function ServiceRequestDetails() {
                 })}
               </SelectField>
               <button
-                className="button primary full"
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-tech-blue px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-sky-700 transition disabled:opacity-50 cursor-pointer"
                 disabled={!selectedTech || saving === "assign" || !operatorId}
                 onClick={() => mutate("assign", assign)}
               >
                 {saving === "assign" ? "Assigning..." : "Assign technician"}
               </button>
-              <div className="assigned">
-                <span>Current technician</span>
-                <strong>{request.technician?.name || "Unassigned"}</strong>
+              <div className="flex justify-between items-center text-xs border-t border-slate-100 pt-3">
+                <span className="text-slate-500 font-semibold">Current technician</span>
+                <strong className="font-bold text-slate-900">{request.technician?.name || "Unassigned"}</strong>
               </div>
             </section>
-            <section className="panel action-panel">
-              <h2>Progress & status</h2>
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <h2 className="text-lg font-extrabold text-slate-900">Progress & status</h2>
               <SelectField
                 label="Status"
                 value={selectedStatus}
@@ -327,7 +329,7 @@ export default function ServiceRequestDetails() {
                 ))}
               </SelectField>
               <button
-                className="button secondary full"
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
                 disabled={
                   saving === "status" ||
                   selectedStatus === request.status ||
@@ -344,9 +346,13 @@ export default function ServiceRequestDetails() {
               >
                 {saving === "status" ? "Updating..." : "Update status"}
               </button>
-              <label className="progress-label">
-                Progress <strong>{progress}%</strong>
+              <label className="block text-xs font-bold text-slate-700 space-y-2">
+                <div className="flex justify-between">
+                  <span>Progress</span>
+                  <strong className="text-tech-blue">{progress}%</strong>
+                </div>
                 <input
+                  className="w-full accent-tech-blue cursor-pointer"
                   type="range"
                   min="0"
                   max="100"
@@ -355,7 +361,7 @@ export default function ServiceRequestDetails() {
                 />
               </label>
               <button
-                className="button secondary full"
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
                 disabled={
                   saving === "progress" ||
                   progress === request.progress ||
@@ -374,8 +380,8 @@ export default function ServiceRequestDetails() {
               </button>
             </section>
 
-            <section className="panel action-panel">
-              <h2>Payment & Billing</h2>
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <h2 className="text-lg font-extrabold text-slate-900">Payment & Billing</h2>
               {selectedStatus === "COMPLETED" ||
               request.status === "COMPLETED" ? (
                 <>
@@ -392,7 +398,7 @@ export default function ServiceRequestDetails() {
                     />
                   </label>
                   <button
-                    className="button primary full mt-3 cursor-pointer"
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-tech-blue px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-sky-700 transition disabled:opacity-50 cursor-pointer mt-3"
                     disabled={
                       saving === "payment" ||
                       !operatorId ||
