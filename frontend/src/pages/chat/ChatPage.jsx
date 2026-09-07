@@ -88,15 +88,15 @@ const loadMessages = () => {
       setMessages((prev) => {
         console.log("Previous messages:", prev);
 
-        // Use chat_message_id consistently.
-        const messageId = newMsg.chat_message_id;
+        // Use chat_message_id or id consistently.
+        const messageId = newMsg.chat_message_id || newMsg.id;
 
         // Prevent duplicate messages.
         if (
           messageId &&
           prev.some(
             (message) =>
-              message.chat_message_id === messageId
+              (message.chat_message_id || message.id) === messageId
           )
         ) {
           console.log(
