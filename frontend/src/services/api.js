@@ -1,8 +1,10 @@
-const API_BASE_URL = import.meta.env.API_URL || "http://localhost:5000/api";
+const API_BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:5000/api";
 
 export async function apiRequest(path, options = {}) {
   const token = localStorage.getItem("techstar_token");
   const authHeader = token ? { Authorization: `Bearer ${token}` } : {};
+
+  console.log("API_BASE_URL from api.js", API_BASE_URL);
 
   const response = await fetch(`${API_BASE_URL}${path}`, {
     headers: {
