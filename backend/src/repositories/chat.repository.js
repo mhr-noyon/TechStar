@@ -17,7 +17,7 @@ export async function findRecentChatMessages(limit = 50) {
     }
 
     return (data || []).map((msg) => ({
-      id: msg.id,
+      chat_message_id: msg.id,
       sender_id: msg.sender_id,
       sender_name: msg.user?.name || "Staff Member",
       sender_role: msg.user?.role || "OPERATOR",
@@ -44,7 +44,7 @@ export async function saveChatMessage({ senderId, senderName, senderRole, conten
     if (error) {
       console.warn("Could not save to chat_messages table, using in-memory store:", error.message);
       const fallbackMsg = {
-        id: "msg-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6),
+        chat_message_id: "msg-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6),
         sender_id: senderId,
         sender_name: senderName || "Staff Member",
         sender_role: senderRole || "OPERATOR",
@@ -56,7 +56,7 @@ export async function saveChatMessage({ senderId, senderName, senderRole, conten
     }
 
     const formattedMsg = {
-      id: data.id,
+      chat_message_id: data.id,
       sender_id: data.sender_id,
       sender_name: data.user?.name || senderName || "Staff Member",
       sender_role: data.user?.role || senderRole || "OPERATOR",
@@ -68,7 +68,7 @@ export async function saveChatMessage({ senderId, senderName, senderRole, conten
   } catch (err) {
     console.warn("Chat repository save error:", err.message);
     const fallbackMsg = {
-      id: "msg-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6),
+      chat_message_id: "msg-" + Date.now() + "-" + Math.random().toString(36).substring(2, 6),
       sender_id: senderId,
       sender_name: senderName || "Staff Member",
       sender_role: senderRole || "OPERATOR",

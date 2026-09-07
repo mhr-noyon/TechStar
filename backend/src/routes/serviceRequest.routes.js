@@ -34,6 +34,6 @@ router.patch("/:id/progress", authorizeRoles("OPERATOR", "SUPERVISOR"), updatePr
 router.patch("/:id/complete", authorizeRoles("OPERATOR", "SUPERVISOR"), complete);
 router.patch("/:id/cancel", authorizeRoles("OPERATOR", "SUPERVISOR"), cancel);
 router.patch("/:id", authorizeRoles("OPERATOR", "SUPERVISOR"), update);
-router.get("/:id", getOne);
+router.get("/:id", authorizeRoles("OPERATOR", "SUPERVISOR"), getOne);
 
 export default router;
