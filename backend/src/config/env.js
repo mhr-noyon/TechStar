@@ -37,4 +37,5 @@ export const env = {
   mailFrom: process.env.MAIL_FROM || "Service Request Created <mhnoyonmd141@gmail.com>",
 
   clientUrl: process.env.FRONTEND_URL || "http://localhost:3000",
+  serverUrl: process.env.SERVER_URL || "http://localhost:5000",
 };

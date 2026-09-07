@@ -124,6 +124,7 @@ export async function createRequest({
   try {
     await enqueueJob("send-service-request-email", {
       requestId: request.id,
+      status: "RECEIVED",
       attempt: 1,
     });
   } catch (err) {
@@ -263,8 +264,16 @@ export async function updateRequest(id, changes) {
         excludeUserId: changedBy,
       });
     }
+
+    if (isStatusChange && ["READY_FOR_DELIVERY", "FAILED"].includes(update.status)) {
+      await enqueueJob("send-service-request-email", {
+        requestId: updated.id,
+        status: update.status,
+        attempt: 1,
+      });
+    }
   } catch (err) {
-    console.warn("Could not send update notification:", err.message);
+    console.warn("Could not send update notification or enqueue status email job:", err.message);
   }
 
   return updated;
@@ -341,8 +350,17 @@ async function updateWithHistory(id, changes, changedBy, note) {
         excludeUserId: changedBy,
       });
     }
+    
+    // Trigger email job for status updates like READY_FOR_DELIVERY or FAILED
+    if (changes.status && ["READY_FOR_DELIVERY", "FAILED"].includes(changes.status)) {
+      await enqueueJob("send-service-request-email", {
+        requestId: updated.id,
+        status: changes.status,
+        attempt: 1,
+      });
+    }
   } catch (err) {
-    console.warn("Could not send update notification:", err.message);
+    console.warn("Could not send update notification or enqueue status email job:", err.message);
   }
 
   return updated;

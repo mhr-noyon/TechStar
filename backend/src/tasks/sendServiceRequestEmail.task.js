@@ -13,19 +13,19 @@ export default async function sendServiceRequestEmailTask(payload = {}) {
   console.log(
     `⏰ [send-service-request-email] Task started at ${new Date().toISOString()}`
   );
-  const { requestId, attempt = 1 } = payload;
+  const { requestId, status = "RECEIVED", attempt = 1 } = payload;
 
   if (!requestId) {
     console.warn("sendServiceRequestEmailTask: Missing requestId in payload");
     return;
   }
 
-  console.log(`📧 [send-service-request-email] Processing email for Request #SR-${requestId} (Attempt ${attempt}/3)`);
+  console.log(`📧 [send-service-request-email] Processing email for Request #SR-${requestId} (${status}) (Attempt ${attempt}/3)`);
 
-  // 1. Idempotency Check: Prevent duplicate emails if already sent
-  const alreadySent = await isEmailAlreadySent(requestId);
+  // 1. Idempotency Check: Prevent duplicate emails if already sent for this status
+  const alreadySent = await isEmailAlreadySent(requestId, status);
   if (alreadySent) {
-    console.log(`ℹ️ Email already delivered for Service Request #SR-${requestId}. Skipping duplicate send.`);
+    console.log(`ℹ️ Email already delivered for Service Request #SR-${requestId} (${status}). Skipping duplicate send.`);
     return;
   }
 
@@ -39,7 +39,7 @@ export default async function sendServiceRequestEmailTask(payload = {}) {
   try {
     // 3. Send confirmation email (which records email_sent_at)
     await sendConfirmationEmail({
-      serviceRequest,
+      serviceRequest: { ...serviceRequest, status: status || serviceRequest.status },
       customer: serviceRequest.customer,
     });
 

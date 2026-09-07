@@ -8,14 +8,17 @@ import {
   update,
 } from "../controllers/user.controller.js";
 
+import { authenticateToken, authorizeRoles } from "../middleware/auth.middleware.js";
+
 const router = Router();
 
-// Have to connect authentication and role authorization here later.
-router.get("/customers", getCustomerByPhone);
-router.get("/", list);
-router.post("/customers", createCustomerUser);
-router.post("/operators", createOperatorUser);
-router.post("/technicians", createTechnicianUser);
-router.patch("/:id", update);
+router.use(authenticateToken);
+
+router.get("/customers", authorizeRoles("OPERATOR", "SUPERVISOR"), getCustomerByPhone);
+router.get("/", authorizeRoles("SUPERVISOR", "OPERATOR"), list);
+router.post("/customers", authorizeRoles("OPERATOR", "SUPERVISOR"), createCustomerUser);
+router.post("/operators", authorizeRoles("SUPERVISOR"), createOperatorUser);
+router.post("/technicians", authorizeRoles("SUPERVISOR"), createTechnicianUser);
+router.patch("/:id", authorizeRoles("SUPERVISOR", "OPERATOR"), update);
 
 export default router;
