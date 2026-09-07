@@ -53,19 +53,3 @@ h3 {
   letter-spacing: -0.025em;
 }
 
-/* DEPRECATED MANUAL APP-SHELL STYLES
-.app-shell {
-  font-size: 16px;
-}
-.app-shell .subtitle,
-.app-shell .panel-heading p,
-.app-shell .section-heading p,
-.app-shell td,
-.app-shell th,
-.app-shell .button,
-.app-shell input,
-.app-shell select,
-.app-shell textarea {
-  font-size: 15px;
-}
-*/
