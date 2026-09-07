@@ -9,5 +9,5 @@ initializeSockets(httpServer);
 
 httpServer.listen(env.port, () => {
   console.log(`Server running on http://localhost:${env.port}`);
-  // startWorker();
+  startWorker();
 });
