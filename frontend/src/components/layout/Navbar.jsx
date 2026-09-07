@@ -1,12 +1,14 @@
-import { Menu, Search, LogOut } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { useState } from "react";
 import { useAuth } from "../../context/AuthContext";
+import { usePeriod } from "../../context/PeriodContext";
 import { useNavigate } from "react-router-dom";
 import NotificationDropdown from "../common/NotificationDropdown";
 
 export default function Navbar({ onOpenSidebar }) {
   const [userMenuOpen, setUserMenuOpen] = useState(false);
   const { user, logout } = useAuth();
+  const { period, setPeriod } = usePeriod();
   const navigate = useNavigate();
 
   const handleLogout = async () => {
@@ -25,7 +27,7 @@ export default function Navbar({ onOpenSidebar }) {
   };
 
   return (
-    <header className="flex h-[72px] items-center justify-between border-b border-tech-line bg-white px-8 max-sm:px-4 sticky top-0 z-30">
+    <header className="flex h-[72px] items-center justify-between border-b border-tech-line bg-white px-8 max-sm:px-4 sticky top-0 z-30 print:hidden">
       <div className="flex items-center gap-3">
         {onOpenSidebar && (
           <button
@@ -41,14 +43,6 @@ export default function Navbar({ onOpenSidebar }) {
           Tech<span className="text-amber-600">Star</span>
         </div>
       </div>
-
-      <label className="flex h-[38px] w-80 items-center gap-2 rounded-lg border border-tech-line bg-slate-50 px-3 text-slate-400 max-md:hidden">
-        <Search size={17} />
-        <input
-          className="w-full border-0 bg-transparent text-xs outline-none"
-          placeholder="Search service requests..."
-        />
-      </label>
 
       <div className="flex items-center gap-4">
         {/* Real-time Notification Dropdown */}

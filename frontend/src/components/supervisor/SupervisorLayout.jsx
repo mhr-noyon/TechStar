@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Menu, Search, LogOut } from "lucide-react";
+import { Menu, LogOut } from "lucide-react";
 import { Outlet, useNavigate } from "react-router-dom";
 import SupervisorSidebar from "./SupervisorSidebar";
 import { useAuth } from "../../context/AuthContext";
@@ -27,14 +27,14 @@ export default function SupervisorLayout() {
   };
 
   return (
-    <div className="flex min-h-screen bg-slate-50 text-tech-ink">
+    <div className="flex min-h-screen bg-slate-50 text-tech-ink print:bg-white print:block">
       <SupervisorSidebar
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
       />
 
-      <div className="min-w-0 flex-1 flex flex-col">
-        <header className="flex h-[72px] items-center justify-between border-b border-tech-line bg-white px-8 max-sm:px-4 sticky top-0 z-30">
+      <div className="min-w-0 flex-1 flex flex-col print:block">
+        <header className="flex h-[72px] items-center justify-between border-b border-tech-line bg-white px-8 max-sm:px-4 sticky top-0 z-30 print:hidden">
           <div className="flex items-center gap-3">
             <button
               className="lg:hidden grid size-9 place-items-center rounded-lg text-slate-600 hover:bg-slate-100 cursor-pointer"
@@ -45,13 +45,6 @@ export default function SupervisorLayout() {
               <Menu size={22} />
             </button>
 
-            <label className="flex h-9 w-80 items-center gap-2 rounded-lg border border-tech-line bg-slate-50 px-3 text-slate-400 max-md:hidden">
-              <Search size={17} />
-              <input
-                className="w-full border-0 bg-transparent text-xs outline-none"
-                placeholder="Search management data..."
-              />
-            </label>
           </div>
 
           <div className="flex items-center gap-5">
@@ -97,7 +90,7 @@ export default function SupervisorLayout() {
           </div>
         </header>
 
-        <main className="mx-auto w-full max-w-[1500px] p-8 max-sm:p-4">
+        <main className="mx-auto w-full max-w-[1500px] p-8 max-sm:p-4 print:p-0 print:m-0 print:max-w-none">
           <Outlet />
         </main>
       </div>

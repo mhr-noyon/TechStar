@@ -113,5 +113,5 @@ function startFallbackPolling() {
     } catch (err) {
       console.error("Fallback worker polling error:", err.message);
     }
-  }, 6000);
+  }, env.workerPeriod);
 }

@@ -38,4 +38,6 @@ export const env = {
 
   clientUrl: process.env.FRONTEND_URL || "http://localhost:3000",
   serverUrl: process.env.SERVER_URL || "http://localhost:5000",
+
+  workerPeriod: process.env.WORKER_PERIOD || 60000
 };

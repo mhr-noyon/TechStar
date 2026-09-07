@@ -3,6 +3,7 @@ import {
   Activity,
   AlertTriangle,
   Calendar,
+  CalendarDays,
   CheckCircle2,
   ClipboardList,
   DollarSign,
@@ -12,11 +13,34 @@ import {
 import { supervisorApi } from "../../services/supervisor.api";
 import { connectOperatorSocket } from "../../sockets/serviceRequest.socket";
 import Loading from "../../components/common/Loading";
+import Dropdown from "../../components/common/Dropdown";
+import { usePeriod } from "../../context/PeriodContext";
+
+const getPeriodLabel = (p) => {
+  switch (p) {
+    case "TODAY":
+    case "DAILY":
+      return "today";
+    case "THIS_WEEK":
+    case "WEEKLY":
+      return "this week";
+    case "THIS_MONTH":
+    case "MONTHLY":
+      return "this month";
+    case "THIS_YEAR":
+    case "YEARLY":
+      return "this year";
+    case "CUSTOM":
+      return "custom period";
+    default:
+      return "all time";
+  }
+};
 
 export default function SupervisorDashboard() {
   const [rawData, setRawData] = useState(null);
   const [error, setError] = useState("");
-  const [period, setPeriod] = useState("MONTHLY"); // YEARLY | MONTHLY | WEEKLY | DAILY | CUSTOM
+  const { period, setPeriod } = usePeriod();
   const [customStart, setCustomStart] = useState("");
   const [customEnd, setCustomEnd] = useState("");
 
@@ -47,19 +71,19 @@ export default function SupervisorDashboard() {
     const now = new Date();
     const requests = rawData.requests;
 
-    if (period === "DAILY") {
+    if (period === "TODAY" || period === "DAILY") {
       const startOfDay = new Date(now.getFullYear(), now.getMonth(), now.getDate());
       return requests.filter((r) => new Date(r.created_at) >= startOfDay);
     }
-    if (period === "WEEKLY") {
+    if (period === "THIS_WEEK" || period === "WEEKLY") {
       const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
       return requests.filter((r) => new Date(r.created_at) >= sevenDaysAgo);
     }
-    if (period === "MONTHLY") {
+    if (period === "THIS_MONTH" || period === "MONTHLY") {
       const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
       return requests.filter((r) => new Date(r.created_at) >= thirtyDaysAgo);
     }
-    if (period === "YEARLY") {
+    if (period === "THIS_YEAR" || period === "YEARLY") {
       const startOfYear = new Date(now.getFullYear(), 0, 1);
       return requests.filter((r) => new Date(r.created_at) >= startOfYear);
     }
@@ -170,25 +194,22 @@ export default function SupervisorDashboard() {
         </div>
 
         {/* Reporting Period Selector */}
-        <div className="flex flex-wrap items-center gap-2 rounded-xl border border-tech-line bg-white p-2 shadow-2xs">
-          <div className="flex items-center gap-1.5 px-2 text-xs font-bold text-slate-500">
-            <Filter size={15} />
-            <span>Period:</span>
-          </div>
-
-          {["DAILY", "WEEKLY", "MONTHLY", "YEARLY", "CUSTOM"].map((p) => (
-            <button
-              key={p}
-              className={`rounded-lg px-3 py-1.5 text-xs font-bold transition cursor-pointer ${
-                period === p
-                  ? "bg-tech-blue text-white shadow-2xs"
-                  : "text-slate-600 hover:bg-slate-100"
-              }`}
-              onClick={() => setPeriod(p)}
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-extrabold text-slate-500">Period:</span>
+          <div className="w-48">
+            <Dropdown
+              icon={<CalendarDays size={16} />}
+              value={period}
+              onChange={(e) => setPeriod(e.target.value)}
             >
-              {p.charAt(0) + p.slice(1).toLowerCase()}
-            </button>
-          ))}
+              <option value="TODAY">Today</option>
+              <option value="THIS_WEEK">This week</option>
+              <option value="THIS_MONTH">This month</option>
+              <option value="THIS_YEAR">This year</option>
+              <option value="ALL">All time</option>
+              <option value="CUSTOM">Custom range</option>
+            </Dropdown>
+          </div>
         </div>
       </div>
 
@@ -204,7 +225,7 @@ export default function SupervisorDashboard() {
               From:
               <input
                 type="date"
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold outline-none focus:border-tech-blue"
+                className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold outline-none focus:border-tech-blue"
                 value={customStart}
                 onChange={(e) => setCustomStart(e.target.value)}
               />
@@ -213,11 +234,22 @@ export default function SupervisorDashboard() {
               To:
               <input
                 type="date"
-                className="rounded-lg border border-slate-300 bg-white px-3 py-1.5 text-xs font-semibold outline-none focus:border-tech-blue"
+                className="h-9 rounded-lg border border-slate-200 bg-white px-2.5 text-xs font-semibold outline-none focus:border-tech-blue"
                 value={customEnd}
                 onChange={(e) => setCustomEnd(e.target.value)}
               />
             </label>
+            {(customStart || customEnd) && (
+              <button
+                className="text-xs font-bold text-tech-blue hover:underline cursor-pointer"
+                onClick={() => {
+                  setCustomStart("");
+                  setCustomEnd("");
+                }}
+              >
+                Clear
+              </button>
+            )}
           </div>
         </div>
       )}
@@ -305,7 +337,7 @@ export default function SupervisorDashboard() {
           </div>
           <div>
             <p className="text-xs font-semibold text-tech-muted">
-              Period Revenue ({period.toLowerCase()})
+              Period Revenue ({getPeriodLabel(period)})
             </p>
             <strong className="text-2xl font-bold text-emerald-700">
               ৳ {metrics.totalRevenue.toLocaleString("en-BD")}

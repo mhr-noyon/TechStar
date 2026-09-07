@@ -9,6 +9,7 @@ export async function fetchUserNotifications(req, res, next) {
   try {
     const userId = req.user.id;
     const notifications = await getUserNotifications(userId);
+    console.log("fetchUserNotifications notifications:", notifications, "userId:", userId);
     return res.json({
       success: true,
       data: notifications,
@@ -22,6 +23,7 @@ export async function fetchUnreadCount(req, res, next) {
   try {
     const userId = req.user.id;
     const count = await getUnreadCount(userId);
+    console.log("fetchUnreadCount count:", count);
     return res.json({
       success: true,
       data: { unreadCount: count },
@@ -34,8 +36,10 @@ export async function fetchUnreadCount(req, res, next) {
 export async function markSingleAsRead(req, res, next) {
   try {
     const userId = req.user.id;
+    // Route uses ':id', so map it to notificationId
     const { id } = req.params;
-    const result = await markNotificationRead(userId, id);
+    const notificationId = id;
+    const result = await markNotificationRead(userId, notificationId);
     const unreadCount = await getUnreadCount(userId);
     return res.json({
       success: true,

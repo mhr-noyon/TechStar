@@ -63,14 +63,17 @@ export default function ServiceRequestDetails() {
       setSelectedTech(item.technician_id || "");
       setSelectedStatus(item.status);
       setProgress(item.progress || 0);
-      setPaymentAmount(item.payment_amount !== null && item.payment_amount !== undefined ? String(item.payment_amount) : "");
+      setPaymentAmount(
+        item.payment_amount !== null && item.payment_amount !== undefined
+          ? String(item.payment_amount)
+          : "",
+      );
     } catch (requestError) {
       setError(requestError.message);
     } finally {
       setLoading(false);
     }
   };
-
 
   useEffect(() => {
     const timer = setTimeout(load, 0);
@@ -152,269 +155,284 @@ export default function ServiceRequestDetails() {
 
   return (
     <>
-      <div className="page-heading compact">
-        <div>
-          <Link className="back-link" to="/operator/requests">
+      <div className="print:hidden">
+        <div className="mb-6">
+          <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-tech-blue hover:underline mb-2" to="/operator/requests">
             <ArrowLeft size={16} />
             Back to requests
           </Link>
-          <div className="title-line">
-            <h1>Request SR-{request.id}</h1>
+          <div className="flex items-center gap-3 my-1">
+            <h1 className="text-2xl font-extrabold text-slate-900 tracking-tight">Request SR-{request.id}</h1>
             <StatusBadge status={request.status} />
           </div>
-          <p className="subtitle">
+          <p className="text-xs text-tech-muted">
             Created {date(request.created_at, true)} · Updated{" "}
             {date(request.updated_at, true)}
           </p>
         </div>
-      </div>
-      {error && <div className="alert error">{error}</div>}
-      {message && (
-        <div className="alert success">
-          <Check size={16} />
-          {message}
-        </div>
-      )}
-      <div className="details-grid">
-        <div className="details-main">
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>Request details</h2>
-                <p>Customer, device, and delivery information</p>
-              </div>
-              <span
-                className={`priority priority-${request.priority.toLowerCase()}`}
-              >
-                {request.priority}
-              </span>
-            </div>
-            <div className="info-grid">
-              <div>
-                <span>Customer name</span>
-                <strong>
-                  {request.customer?.name || "Customer unavailable"}
-                </strong>
-              </div>
-              <div>
-                <span>Phone & email</span>
-                <strong>
-                  {request.customer?.phone || "No phone"}
-                  <br />
-                  {request.customer?.email || "No email"}
-                </strong>
-              </div>
-              <div>
-                <span>Expected delivery</span>
-                <strong>{date(request.expected_delivery_at)}</strong>
-              </div>
-              <div>
-                <span>Assigned technician</span>
-                <strong>{request.technician?.name || "Unassigned"}</strong>
-              </div>
-              <div>
-                <span>Service Amount</span>
-                <strong>
-                  {request.payment_amount !== null && request.payment_amount !== undefined
-                    ? `৳ ${Number(request.payment_amount).toLocaleString("en-BD")}`
-                    : "Not set"}
-                </strong>
-              </div>
-
-              <div className="wide">
-                <span>Device information</span>
-                <strong>{request.device_info}</strong>
-              </div>
-              <div className="wide">
-                <span>Problem description</span>
-                <strong className="long-copy">
-                  {request.problem_description}
-                </strong>
-              </div>
-            </div>
-          </section>
-          <section className="panel grid grid-cols-[1fr_auto_auto] items-center gap-5 border-sky-100 bg-sky-50 max-[700px]:grid-cols-1 print:border print:border-black print:shadow-none">
-            <div className="print:hidden">
-              <span className="text-[11px] font-extrabold uppercase tracking-[1.3px] text-tech-blue">
-                Customer handoff
-              </span>
-              <h2 className="my-1 text-base">Printed tracking access</h2>
-              <p className="m-0 text-xs text-tech-muted">
-                Give the customer this request ID and six-digit code.
-              </p>
-            </div>
-            <div className="flex flex-col gap-1 rounded-lg border border-sky-100 bg-white px-4 py-3 text-center max-[700px]:items-start max-[700px]:text-left">
-              <span className="text-[11px] text-tech-muted">
-                Request ID: SR-{request.id}
-              </span>
-              <strong className="font-mono text-[22px] tracking-[3px] text-tech-blue">
-                {request.customer_access_code || "Not available"}
-              </strong>
-            </div>
-            <button
-              className="button secondary max-[700px]:w-full print:hidden"
-              type="button"
-              onClick={() => window.print()}
-            >
-              <Printer size={15} />
-              Print access slip
-            </button>
-          </section>
-          <section className="panel">
-            <div className="panel-heading">
-              <div>
-                <h2>Request history</h2>
-                <p>Every update recorded against this request</p>
-              </div>
-            </div>
-            <StatusTimeline history={history} />
-          </section>
-        </div>
-        <aside className="details-side">
-          <section className="panel action-panel">
-            <h2>Technician assignment</h2>
-            <p>Live count includes reservations made by other operators.</p>
-            <SelectField
-              label="Technician"
-              value={selectedTech}
-              onChange={changeTechnician}
-            >
-              <option value="">Select technician</option>
-              {technicians.map((tech) => {
-                const selected = reservations[tech.user_id] || 0;
-                const total = tech.active_jobs + selected;
-                const full = total >= tech.max_capacity;
-                return (
-                  <option
-                    disabled={full}
-                    key={tech.user_id}
-                    value={tech.user_id}
-                  >
-                    {tech.user?.name || "Technician unavailable"} · Active{" "}
-                    {tech.active_jobs} · Selected {selected} · Total {total}/
-                    {tech.max_capacity}
-                    {full ? " · Full" : ""}
-                  </option>
-                );
-              })}
-            </SelectField>
-            <button
-              className="button primary full"
-              disabled={!selectedTech || saving === "assign" || !operatorId}
-              onClick={() => mutate("assign", assign)}
-            >
-              {saving === "assign" ? "Assigning..." : "Assign technician"}
-            </button>
-            <div className="assigned">
-              <span>Current technician</span>
-              <strong>{request.technician?.name || "Unassigned"}</strong>
-            </div>
-          </section>
-          <section className="panel action-panel">
-            <h2>Progress & status</h2>
-            <SelectField
-              label="Status"
-              value={selectedStatus}
-              onChange={(event) => setSelectedStatus(event.target.value)}
-            >
-              {statuses.map((value) => (
-                <option key={value}>{value}</option>
-              ))}
-            </SelectField>
-            <button
-              className="button secondary full"
-              disabled={
-                saving === "status" ||
-                selectedStatus === request.status ||
-                !operatorId
-              }
-              onClick={() =>
-                mutate("status", () =>
-                  serviceRequestApi.status(id, {
-                    status: selectedStatus,
-                    changedBy: operatorId,
-                  }),
-                )
-              }
-            >
-              {saving === "status" ? "Updating..." : "Update status"}
-            </button>
-            <label className="progress-label">
-              Progress <strong>{progress}%</strong>
-              <input
-                type="range"
-                min="0"
-                max="100"
-                value={progress}
-                onChange={(event) => setProgress(Number(event.target.value))}
-              />
-            </label>
-            <button
-              className="button secondary full"
-              disabled={
-                saving === "progress" ||
-                progress === request.progress ||
-                !operatorId
-              }
-              onClick={() =>
-                mutate("progress", () =>
-                  serviceRequestApi.progress(id, {
-                    progress,
-                    changedBy: operatorId,
-                  }),
-                )
-              }
-            >
-              {saving === "progress" ? "Saving..." : "Save progress"}
-            </button>
-          </section>
-
-          <section className="panel action-panel">
-            <h2>Payment & Billing</h2>
-            {selectedStatus === "COMPLETED" || request.status === "COMPLETED" ? (
-              <>
-                <label className="text-xs font-semibold text-slate-600 block">
-                  Payment Amount (৳)
-                  <input
-                    className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold focus:border-tech-blue outline-none"
-                    type="number"
-                    min="0"
-                    step="0.01"
-                    placeholder="Enter final payment amount"
-                    value={paymentAmount}
-                    onChange={(e) => setPaymentAmount(e.target.value)}
-                  />
-                </label>
-                <button
-                  className="button primary full mt-3 cursor-pointer"
-                  disabled={
-                    saving === "payment" ||
-                    !operatorId ||
-                    (paymentAmount === String(request.payment_amount ?? "") && selectedStatus === request.status)
-                  }
-                  onClick={() =>
-                    mutate("payment", () =>
-                      serviceRequestApi.update(id, {
-                        ...(selectedStatus !== request.status ? { status: selectedStatus } : {}),
-                        paymentAmount: paymentAmount !== "" ? Number(paymentAmount) : null,
-                        changedBy: operatorId,
-                        note: `Payment amount set to ৳${paymentAmount || 0}${selectedStatus !== request.status ? ` and status set to ${selectedStatus}` : ""}`,
-                      }),
-                    )
-                  }
+        {error && <div className="mb-6 rounded-xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700">{error}</div>}
+        {message && (
+          <div className="mb-6 flex items-center gap-2 rounded-xl border border-emerald-200 bg-emerald-50 p-4 text-sm font-semibold text-emerald-700">
+            <Check size={16} />
+            {message}
+          </div>
+        )}
+        <div className="grid grid-cols-3 gap-6 max-lg:grid-cols-1">
+          <div className="col-span-2 space-y-6 max-lg:col-span-1">
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <div className="flex items-center justify-between border-b border-slate-100 pb-4">
+                <div>
+                  <h2 className="text-lg font-extrabold text-slate-900">Request details</h2>
+                  <p className="text-xs text-tech-muted">Customer, device, and delivery information</p>
+                </div>
+                <span
+                  className={`inline-block rounded-md border px-2 py-0.5 text-[11px] font-extrabold uppercase tracking-wide ${
+                    request.priority === "URGENT"
+                      ? "bg-red-50 text-red-700 border-red-200"
+                      : request.priority === "HIGH"
+                      ? "bg-amber-50 text-amber-700 border-amber-200"
+                      : "bg-slate-100 text-slate-700 border-slate-200"
+                  }`}
                 >
-                  {saving === "payment" ? "Updating Payment..." : "Save Payment & Completed Status"}
-                </button>
-              </>
-            ) : (
-              <p className="text-xs text-tech-muted italic bg-slate-50 p-3 rounded-lg border border-slate-200">
-                Payment amount becomes applicable when the service status is set to <strong>COMPLETED</strong>.
-              </p>
-            )}
-          </section>
+                  {request.priority}
+                </span>
+              </div>
+              <div className="grid grid-cols-2 gap-4 text-xs max-sm:grid-cols-1">
+                <div>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Customer name</span>
+                  <strong className="text-sm font-bold text-slate-800">
+                    {request.customer?.name || "Customer unavailable"}
+                  </strong>
+                </div>
+                <div>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Phone & email</span>
+                  <strong className="text-sm font-bold text-slate-800">
+                    {request.customer?.phone || "No phone"}
+                    <br />
+                    {request.customer?.email || "No email"}
+                  </strong>
+                </div>
+                <div>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Expected delivery</span>
+                  <strong className="text-sm font-bold text-slate-800">{date(request.expected_delivery_at)}</strong>
+                </div>
+                <div>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Assigned technician</span>
+                  <strong className="text-sm font-bold text-slate-800">{request.technician?.name || "Unassigned"}</strong>
+                </div>
+                <div>
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Service Amount</span>
+                  <strong className="text-sm font-bold text-slate-800">
+                    {request.payment_amount !== null &&
+                    request.payment_amount !== undefined
+                      ? `৳ ${Number(request.payment_amount).toLocaleString("en-BD")}`
+                      : "Not set"}
+                  </strong>
+                </div>
 
+                <div className="col-span-2 max-sm:col-span-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Device information</span>
+                  <strong className="text-sm font-semibold text-slate-800">{request.device_info}</strong>
+                </div>
+                <div className="col-span-2 max-sm:col-span-1">
+                  <span className="block text-[11px] font-bold uppercase tracking-wider text-slate-400">Problem description</span>
+                  <strong className="text-sm font-medium text-slate-700 leading-relaxed block mt-0.5">
+                    {request.problem_description}
+                  </strong>
+                </div>
+              </div>
+            </section>
+            <section className="rounded-2xl border border-sky-100 bg-sky-50 p-6 shadow-2xs grid grid-cols-[1fr_auto_auto] items-center gap-5 max-[700px]:grid-cols-1 print:border print:border-black print:shadow-none">
+              <div className="print:hidden">
+                <span className="text-[11px] font-extrabold uppercase tracking-[1.3px] text-tech-blue">
+                  Customer handoff
+                </span>
+                <h2 className="my-1 text-base font-extrabold text-slate-900">Printed tracking access</h2>
+                <p className="m-0 text-xs text-tech-muted">
+                  Give the customer this request ID and six-digit code.
+                </p>
+              </div>
+              <div className="flex flex-col gap-1 rounded-xl border border-sky-100 bg-white px-4 py-3 text-center max-[700px]:items-start max-[700px]:text-left">
+                <span className="text-[11px] font-bold text-tech-muted">
+                  Request ID: SR-{request.id}
+                </span>
+                <strong className="font-mono text-[22px] tracking-[3px] text-tech-blue font-extrabold">
+                  {request.customer_access_code || "Not available"}
+                </strong>
+              </div>
+              <button
+                className="flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 cursor-pointer max-[700px]:w-full print:hidden"
+                type="button"
+                onClick={() => window.print()}
+              >
+                <Printer size={15} />
+                Print access slip
+              </button>
+            </section>
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <div className="border-b border-slate-100 pb-4">
+                <h2 className="text-lg font-extrabold text-slate-900">Request history</h2>
+                <p className="text-xs text-tech-muted">Every update recorded against this request</p>
+              </div>
+              <StatusTimeline history={history} />
+            </section>
+          </div>
+          <aside className="space-y-6">
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <h2 className="text-lg font-extrabold text-slate-900">Technician assignment</h2>
+              <p className="text-xs text-tech-muted">Live count includes reservations made by other operators.</p>
+              <SelectField
+                label="Technician"
+                value={selectedTech}
+                onChange={changeTechnician}
+              >
+                <option value="">Select technician</option>
+                {technicians.map((tech) => {
+                  const selected = reservations[tech.user_id] || 0;
+                  const total = tech.active_jobs + selected;
+                  const full = total >= tech.max_capacity;
+                  return (
+                    <option
+                      disabled={full}
+                      key={tech.user_id}
+                      value={tech.user_id}
+                    >
+                      {tech.user?.name || "Technician unavailable"} · Active{" "}
+                      {tech.active_jobs} · Selected {selected} · Total {total}/
+                      {tech.max_capacity}
+                      {full ? " · Full" : ""}
+                    </option>
+                  );
+                })}
+              </SelectField>
+              <button
+                className="w-full flex items-center justify-center gap-2 rounded-xl bg-tech-blue px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-sky-700 transition disabled:opacity-50 cursor-pointer"
+                disabled={!selectedTech || saving === "assign" || !operatorId}
+                onClick={() => mutate("assign", assign)}
+              >
+                {saving === "assign" ? "Assigning..." : "Assign technician"}
+              </button>
+              <div className="flex justify-between items-center text-xs border-t border-slate-100 pt-3">
+                <span className="text-slate-500 font-semibold">Current technician</span>
+                <strong className="font-bold text-slate-900">{request.technician?.name || "Unassigned"}</strong>
+              </div>
+            </section>
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <h2 className="text-lg font-extrabold text-slate-900">Progress & status</h2>
+              <SelectField
+                label="Status"
+                value={selectedStatus}
+                onChange={(event) => setSelectedStatus(event.target.value)}
+              >
+                {statuses.map((value) => (
+                  <option key={value}>{value}</option>
+                ))}
+              </SelectField>
+              <button
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                disabled={
+                  saving === "status" ||
+                  selectedStatus === request.status ||
+                  !operatorId
+                }
+                onClick={() =>
+                  mutate("status", () =>
+                    serviceRequestApi.status(id, {
+                      status: selectedStatus,
+                      changedBy: operatorId,
+                    }),
+                  )
+                }
+              >
+                {saving === "status" ? "Updating..." : "Update status"}
+              </button>
+              <label className="block text-xs font-bold text-slate-700 space-y-2">
+                <div className="flex justify-between">
+                  <span>Progress</span>
+                  <strong className="text-tech-blue">{progress}%</strong>
+                </div>
+                <input
+                  className="w-full accent-tech-blue cursor-pointer"
+                  type="range"
+                  min="0"
+                  max="100"
+                  value={progress}
+                  onChange={(event) => setProgress(Number(event.target.value))}
+                />
+              </label>
+              <button
+                className="w-full flex items-center justify-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-2xs transition hover:bg-slate-50 disabled:opacity-50 cursor-pointer"
+                disabled={
+                  saving === "progress" ||
+                  progress === request.progress ||
+                  !operatorId
+                }
+                onClick={() =>
+                  mutate("progress", () =>
+                    serviceRequestApi.progress(id, {
+                      progress,
+                      changedBy: operatorId,
+                    }),
+                  )
+                }
+              >
+                {saving === "progress" ? "Saving..." : "Save progress"}
+              </button>
+            </section>
 
-        </aside>
+            <section className="rounded-2xl border border-tech-line bg-white p-6 shadow-2xs space-y-4">
+              <h2 className="text-lg font-extrabold text-slate-900">Payment & Billing</h2>
+              {selectedStatus === "COMPLETED" ||
+              request.status === "COMPLETED" ? (
+                <>
+                  <label className="text-xs font-semibold text-slate-600 block">
+                    Payment Amount (৳)
+                    <input
+                      className="mt-1.5 h-10 w-full rounded-lg border border-slate-200 px-3 text-sm font-semibold focus:border-tech-blue outline-none"
+                      type="number"
+                      min="0"
+                      step="0.01"
+                      placeholder="Enter final payment amount"
+                      value={paymentAmount}
+                      onChange={(e) => setPaymentAmount(e.target.value)}
+                    />
+                  </label>
+                  <button
+                    className="w-full flex items-center justify-center gap-2 rounded-xl bg-tech-blue px-4 py-2.5 text-sm font-bold text-white shadow-md hover:bg-sky-700 transition disabled:opacity-50 cursor-pointer mt-3"
+                    disabled={
+                      saving === "payment" ||
+                      !operatorId ||
+                      (paymentAmount === String(request.payment_amount ?? "") &&
+                        selectedStatus === request.status)
+                    }
+                    onClick={() =>
+                      mutate("payment", () =>
+                        serviceRequestApi.update(id, {
+                          ...(selectedStatus !== request.status
+                            ? { status: selectedStatus }
+                            : {}),
+                          paymentAmount:
+                            paymentAmount !== "" ? Number(paymentAmount) : null,
+                          changedBy: operatorId,
+                          note: `Payment amount set to ৳${paymentAmount || 0}${selectedStatus !== request.status ? ` and status set to ${selectedStatus}` : ""}`,
+                        }),
+                      )
+                    }
+                  >
+                    {saving === "payment"
+                      ? "Updating Payment..."
+                      : "Save Payment & Completed Status"}
+                  </button>
+                </>
+              ) : (
+                <p className="text-xs text-tech-muted italic bg-slate-50 p-3 rounded-lg border border-slate-200">
+                  Payment amount becomes applicable when the service status is
+                  set to <strong>COMPLETED</strong>.
+                </p>
+              )}
+            </section>
+          </aside>
+        </div>
       </div>
 
       {/* Print-only slip — hidden on screen, shown during window.print() */}
