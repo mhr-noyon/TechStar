@@ -3,7 +3,7 @@ import { supabase } from "../config/database.js";
 export async function findTechnicians() {
   const { data, error } = await supabase
     .from("technicians")
-    .select("*, user:users(id, name, email, phone)")
+    .select("*, user:users(id, name, email, phone, role, created_at, updated_at)")
     .order("id");
   if (error) throw error;
   return data;
@@ -12,7 +12,7 @@ export async function findTechnicians() {
 export async function findAvailableTechnicians() {
   const { data, error } = await supabase
     .from("technicians")
-    .select("*, user:users(id, name, email, phone)")
+    .select("*, user:users(id, name, email, phone, role, created_at, updated_at)")
     .eq("is_available", true)
     .order("id");
   if (error) throw error;
@@ -22,7 +22,7 @@ export async function findAvailableTechnicians() {
 export async function findTechnicianById(id) {
   const { data, error } = await supabase
     .from("technicians")
-    .select("*, user:users(id, name, email, phone)")
+    .select("*, user:users(id, name, email, phone, role, created_at, updated_at)")
     .eq("id", id)
     .maybeSingle();
   if (error) throw error;

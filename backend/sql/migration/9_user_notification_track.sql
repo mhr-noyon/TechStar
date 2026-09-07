@@ -109,19 +109,35 @@ AS $$
         ON n.chat_message_id = c.id
 
     WHERE
+        -- Notification has not been read by this user
         COALESCE(unt.is_read, FALSE) = FALSE
 
         AND (
+            -- CHAT:
+            -- Visible to all staff except the message sender
             (
                 n.type = 'CHAT'
                 AND n.chat_message_id IS NOT NULL
                 AND c.sender_id <> p_user_id
             )
+
             OR
+
+            -- OVERDUE:
+            -- Visible to the service-request creator
+            -- or any supervisor
             (
                 n.type = 'OVERDUE'
                 AND n.service_request_id IS NOT NULL
-                AND s.created_by <> p_user_id
+                AND (
+                    s.created_by = p_user_id
+                    OR EXISTS (
+                        SELECT 1
+                        FROM users u
+                        WHERE u.id = p_user_id
+                          AND u.role = 'SUPERVISOR'
+                    )
+                )
             )
         );
 $$;
