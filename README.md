@@ -74,8 +74,8 @@ The system provides dedicated interfaces for **Operators** and **Supervisors**, 
                                     │
                                     │
 ┌──────────────────┐                │
-│    Operator      │                │
-│    Dashboard     │                │
+│    Operator /    │                │
+│    Supervisor    │                │
 └────────┬─────────┘                │
          │                          │
          │ HTTP / WebSocket         │
@@ -85,25 +85,30 @@ The system provides dedicated interfaces for **Operators** and **Supervisors**, 
 │                                           │
 │              Express.js API               │
 │                                           │
-│  ┌─────────────┐  ┌────────────────────┐  │
-│  │ Controllers │  │    Middleware      │  │
-│  └──────┬──────┘  └────────────────────┘  │
-│         │                                 │
-│  ┌──────▼──────┐                          │
-│  │  Services   │                          │
-│  └──────┬──────┘                          │
-│         │                                 │
-│  ┌──────▼──────┐                          │
-│  │ Repositories│                          │
-│  └──────┬──────┘                          │
-│         │                                 │
-│  ┌──────▼───────────────────────────────┐ │
-│  │            Supabase / PostgreSQL     │ │
-│  └──────────────────────────────────────┘ │
+│          ┌─────────────────────┐          │
+│          │     Middleware      │          │
+│          │  (Auth, CORS, Rate) │          │
+│          └──────────┬──────────┘          │
+│                     │                     │
+│              ┌──────▼──────┐              │
+│              │ Controllers │              │
+│              └──────┬──────┘              │
+│                     │                     │
+│              ┌──────▼──────┐              │
+│              │  Services   │              │
+│              └──────┬──────┘              │
+│                     │                     │
+│              ┌──────▼──────┐              │
+│              │ Repositories│              │
+│              └──────┬──────┘              │
+│                     │                     │
+│  ┌──────────────────▼──────────────────┐  │
+│  │            Supabase / PostgreSQL     │  │
+│  └─────────────────────────────────────┘  │
 │                                           │
 │  ┌────────────────┐   ┌───────────────┐   │
-│  │    Socket.IO   │   │ Graphile      │   │
-│  │                │   │ Worker        │   │
+│  │   Socket.IO    │   │ Graphile      │   │
+│  │   Real-Time    │   │ Worker        │   │
 │  └────────────────┘   └───────┬───────┘   │
 │                               │           │
 │                        ┌──────▼────────┐  │

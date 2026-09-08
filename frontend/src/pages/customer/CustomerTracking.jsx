@@ -148,27 +148,46 @@ export default function CustomerTracking() {
                 <strong className="text-sm">{result.request.priority}</strong>
               </div>
             </div>
-            <div className="pt-5">
-              {result.history.map((item) => (
-                <div className="flex gap-3 py-3" key={item.id}>
-                  <span className="grid size-[22px] shrink-0 place-items-center rounded-full bg-tech-blue-soft text-tech-blue">
-                    {item.new_status === result.request.status && (
-                      <Check size={12} />
-                    )}
-                  </span>
-                  <div>
-                    <strong className="text-sm">
-                      {item.new_status?.replaceAll("_", " ")}
-                    </strong>
-                    <p className="my-1 text-xs text-tech-muted">
-                      {item.note || "Request updated"}
+            <div className="pt-5 space-y-1">
+              {(() => {
+                const seenStatuses = new Set();
+                const uniqueHistory = (result.history || []).filter((item) => {
+                  const statusKey = item.new_status;
+                  if (!statusKey) return true;
+                  if (seenStatuses.has(statusKey)) return false;
+                  seenStatuses.add(statusKey);
+                  return true;
+                });
+
+                if (uniqueHistory.length === 0) {
+                  return (
+                    <p className="text-xs text-tech-muted italic">
+                      No status steps recorded yet.
                     </p>
-                    <small className="text-xs text-slate-400">
-                      {date(item.created_at, true)}
-                    </small>
+                  );
+                }
+
+                return uniqueHistory.map((item) => (
+                  <div className="flex gap-3 py-3 border-b border-slate-100 last:border-0" key={item.id}>
+                    <span className="grid size-[22px] shrink-0 place-items-center rounded-full bg-tech-blue-soft text-tech-blue mt-0.5">
+                      {item.new_status === result.request.status && (
+                        <Check size={12} />
+                      )}
+                    </span>
+                    <div>
+                      <strong className="text-sm font-bold text-slate-900 block">
+                        {item.new_status?.replaceAll("_", " ")}
+                      </strong>
+                      <p className="my-0.5 text-xs text-tech-muted">
+                        {item.note || "Request status updated"}
+                      </p>
+                      <small className="text-[11px] text-slate-400 font-medium">
+                        {date(item.created_at, true)}
+                      </small>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ));
+              })()}
             </div>
           </section>
         )}
